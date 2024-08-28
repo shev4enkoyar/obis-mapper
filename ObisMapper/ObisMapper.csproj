@@ -4,6 +4,7 @@
         <TargetFramework>netstandard2.1</TargetFramework>
         <Nullable>enable</Nullable>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <PackageId>obis-mapper</PackageId>
         <Authors>Yaroslav Shevchenko</Authors>
         <PackageProjectUrl>https://github.com/shev4enkoyar/obis-mapper</PackageProjectUrl>
@@ -16,7 +17,7 @@
         <RepositoryType>git</RepositoryType>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <Title>obis-mapper</Title>
-        <Version>0.0.1</Version>
+        <Version>0.0.2</Version>
     </PropertyGroup>
 
     <ItemGroup>
