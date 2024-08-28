@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ObisMapper", "ObisMapper\ObisMapper.csproj", "{2C1E9304-5646-40C4-A7AC-D1817FC883C8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ObisMapper.Tests", "ObisMapper.Tests\ObisMapper.Tests.csproj", "{7B639008-9531-4DC7-9E27-E5BF3A2A59DF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2C1E9304-5646-40C4-A7AC-D1817FC883C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2C1E9304-5646-40C4-A7AC-D1817FC883C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2C1E9304-5646-40C4-A7AC-D1817FC883C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2C1E9304-5646-40C4-A7AC-D1817FC883C8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7B639008-9531-4DC7-9E27-E5BF3A2A59DF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7B639008-9531-4DC7-9E27-E5BF3A2A59DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7B639008-9531-4DC7-9E27-E5BF3A2A59DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7B639008-9531-4DC7-9E27-E5BF3A2A59DF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

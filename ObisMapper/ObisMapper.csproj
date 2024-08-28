@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.1</TargetFramework>
+        <Nullable>enable</Nullable>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <PackageId>ObisMapper</PackageId>
+        <Authors>Yaroslav Shevchenko</Authors>
+        <PackageProjectUrl>https://github.com/shev4enkoyar/ObisMapper</PackageProjectUrl>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <RepositoryUrl>https://github.com/shev4enkoyar/ObisMapper</RepositoryUrl>
+        <PackageTags>mapping; OBIS; data-transformation; utility</PackageTags>
+        <Description>ObisMapper is a .NET library that provides easy-to-use mappings for OBIS codes to .NET objects.</Description>
+        <NeutralLanguage>en</NeutralLanguage>
+        <Copyright>2024</Copyright>
+        <RepositoryType>git</RepositoryType>
+        <Title>ObisMapper</Title>
+        <Version>0.0.1</Version>
+    </PropertyGroup>
+
+</Project>
