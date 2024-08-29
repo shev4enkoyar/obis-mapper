@@ -12,8 +12,11 @@ namespace ObisMapper
     /// </summary>
     public static class LogicalNameMapper
     {
-        private static readonly ConcurrentDictionary<PropertyInfo, LogicalNameMappingAttribute[]> _attributeCache =
+        private static readonly ConcurrentDictionary<PropertyInfo, LogicalNameMappingAttribute[]> LogicalNameMappingAttributeCache =
             new ConcurrentDictionary<PropertyInfo, LogicalNameMappingAttribute[]>();
+        
+        private static readonly ConcurrentDictionary<PropertyInfo, bool> NestedModelAttributePresenceCache = 
+            new ConcurrentDictionary<PropertyInfo, bool>();
         
         /// <summary>
         ///     Fills the properties of the specified model with the provided value,
@@ -41,7 +44,7 @@ namespace ObisMapper
             var properties = model.GetType().GetProperties();
 
             foreach (var property in properties)
-                if (property.IsDefined(typeof(NestedModelAttribute), false))
+                if (IsNestedModel(property))
                 {
                     var nestedModel = CreatePropertyInstanceIfNotExists(model, property.GetValue(model), property);
 
@@ -58,9 +61,14 @@ namespace ObisMapper
             return model;
         }
         
+        private static bool IsNestedModel(PropertyInfo property)
+        {
+            return NestedModelAttributePresenceCache.GetOrAdd(property, prop => prop.IsDefined(typeof(NestedModelAttribute), false));
+        }
+        
         private static LogicalNameMappingAttribute[] GetLogicalNameMappingAttributes(PropertyInfo property)
         {
-            return _attributeCache.GetOrAdd(property, prop =>
+            return LogicalNameMappingAttributeCache.GetOrAdd(property, prop =>
                 prop.GetCustomAttributes<LogicalNameMappingAttribute>(false).ToArray());
         }
 
