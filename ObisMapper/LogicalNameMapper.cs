@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Reflection;
 using ObisMapper.Attributes;
@@ -11,6 +12,9 @@ namespace ObisMapper
     /// </summary>
     public static class LogicalNameMapper
     {
+        private static readonly ConcurrentDictionary<PropertyInfo, LogicalNameMappingAttribute[]> _attributeCache =
+            new ConcurrentDictionary<PropertyInfo, LogicalNameMappingAttribute[]>();
+        
         /// <summary>
         ///     Fills the properties of the specified model with the provided value,
         ///     based on the logical name and tag. Recursively processes nested models
@@ -46,14 +50,18 @@ namespace ObisMapper
                 }
                 else
                 {
-                    var attributes = property
-                        .GetCustomAttributes<LogicalNameMappingAttribute>(false)
-                        .ToArray();
+                    var attributes = GetLogicalNameMappingAttributes(property);
 
                     FillPropertiesByAttributes(model, logicalName, value, tag, customMapping, attributes, property);
                 }
 
             return model;
+        }
+        
+        private static LogicalNameMappingAttribute[] GetLogicalNameMappingAttributes(PropertyInfo property)
+        {
+            return _attributeCache.GetOrAdd(property, prop =>
+                prop.GetCustomAttributes<LogicalNameMappingAttribute>(false).ToArray());
         }
 
         private static void FillPropertiesByAttributes<TModel>(TModel model, string logicalName, object value,
