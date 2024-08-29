@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using ObisMapper.Attributes;
 
@@ -10,14 +11,21 @@ namespace ObisMapper
     ///     Provides functionality to map values to model properties based on logical names,
     ///     with support for nested models and default values.
     /// </summary>
-    public static class LogicalNameMapper
+    public class LogicalNameMapper
     {
-        private static readonly ConcurrentDictionary<PropertyInfo, LogicalNameMappingAttribute[]> LogicalNameMappingAttributeCache =
-            new ConcurrentDictionary<PropertyInfo, LogicalNameMappingAttribute[]>();
-        
-        private static readonly ConcurrentDictionary<PropertyInfo, bool> NestedModelAttributePresenceCache = 
+        private readonly ConcurrentDictionary<PropertyInfo, LogicalNameMappingAttribute[]>
+            _logicalNameMappingAttributeCache =
+                new ConcurrentDictionary<PropertyInfo, LogicalNameMappingAttribute[]>();
+
+        private readonly ConcurrentDictionary<PropertyInfo, bool> _nestedModelAttributePresenceCache =
             new ConcurrentDictionary<PropertyInfo, bool>();
-        
+
+        private readonly ConcurrentDictionary<PropertyInfo, Action<object, object?>> _propertySettersCache =
+            new ConcurrentDictionary<PropertyInfo, Action<object, object?>>();
+
+        private readonly ConcurrentDictionary<Type, PropertyInfo[]> _typePropertiesCache =
+            new ConcurrentDictionary<Type, PropertyInfo[]>();
+
         /// <summary>
         ///     Fills the properties of the specified model with the provided value,
         ///     based on the logical name and tag. Recursively processes nested models
@@ -37,19 +45,17 @@ namespace ObisMapper
         ///     that match the specified logical name and tag.
         /// </param>
         /// <returns>The model with filled properties.</returns>
-        public static T FillObisModel<T>(this T model, string logicalName, object value,
+        public T FillObisModel<T>(T model, string logicalName, object value,
             string tag = LogicalNameMappingAttribute.DefaultTag, CustomPropertyMapping<T>? customMapping = null)
             where T : notnull
         {
-            var properties = model.GetType().GetProperties();
-
-            foreach (var property in properties)
+            foreach (var property in GetTypeProperties(model.GetType()))
                 if (IsNestedModel(property))
                 {
                     var nestedModel = CreatePropertyInstanceIfNotExists(model, property.GetValue(model), property);
-
                     nestedModel = FillObisModel(nestedModel, logicalName, value, tag);
-                    property.SetValue(model, nestedModel);
+                    SetPropertyValue(model, property, nestedModel);
+                    //property.SetValue(model, nestedModel);
                 }
                 else
                 {
@@ -60,19 +66,25 @@ namespace ObisMapper
 
             return model;
         }
-        
-        private static bool IsNestedModel(PropertyInfo property)
+
+        private PropertyInfo[] GetTypeProperties(Type type)
         {
-            return NestedModelAttributePresenceCache.GetOrAdd(property, prop => prop.IsDefined(typeof(NestedModelAttribute), false));
+            return _typePropertiesCache.GetOrAdd(type, t => t.GetProperties());
         }
-        
-        private static LogicalNameMappingAttribute[] GetLogicalNameMappingAttributes(PropertyInfo property)
+
+        private bool IsNestedModel(PropertyInfo property)
         {
-            return LogicalNameMappingAttributeCache.GetOrAdd(property, prop =>
+            return _nestedModelAttributePresenceCache.GetOrAdd(property,
+                prop => prop.IsDefined(typeof(NestedModelAttribute), false));
+        }
+
+        private LogicalNameMappingAttribute[] GetLogicalNameMappingAttributes(PropertyInfo property)
+        {
+            return _logicalNameMappingAttributeCache.GetOrAdd(property, prop =>
                 prop.GetCustomAttributes<LogicalNameMappingAttribute>(false).ToArray());
         }
 
-        private static void FillPropertiesByAttributes<TModel>(TModel model, string logicalName, object value,
+        private void FillPropertiesByAttributes<TModel>(TModel model, string logicalName, object value,
             string tag, CustomPropertyMapping<TModel>? customMapping, LogicalNameMappingAttribute[] attributes,
             PropertyInfo property) where TModel : notnull
         {
@@ -80,11 +92,12 @@ namespace ObisMapper
             {
                 if (attribute.LogicalName != logicalName || attribute.Tag != tag)
                     continue;
-                property.SetValue(model, GetConvertedValue(customMapping, attribute, property, model, value));
+                SetPropertyValue(model, property, GetConvertedValue(customMapping, attribute, property, model, value));
+                //property.SetValue(model, GetConvertedValue(customMapping, attribute, property, model, value));
             }
         }
 
-        private static object? GetConvertedValue<TModel>(CustomPropertyMapping<TModel>? customMapping,
+        private object? GetConvertedValue<TModel>(CustomPropertyMapping<TModel>? customMapping,
             LogicalNameMappingAttribute attribute, PropertyInfo property, TModel model, object value)
             where TModel : notnull
         {
@@ -107,7 +120,7 @@ namespace ObisMapper
         /// <param name="value">The value to convert.</param>
         /// <param name="targetType">The type to convert the value to.</param>
         /// <returns>The converted value.</returns>
-        private static object? ConvertValue(object? value, Type targetType)
+        private object? ConvertValue(object? value, Type targetType)
         {
             if (!targetType.IsGenericType || targetType.GetGenericTypeDefinition() != typeof(Nullable<>))
                 return Convert.ChangeType(value, targetType);
@@ -126,12 +139,14 @@ namespace ObisMapper
         /// <param name="nestedModel">The current value of the nested model property.</param>
         /// <param name="property">The property to instantiate if null.</param>
         /// <returns>The existing or newly created instance of the nested model.</returns>
-        private static object CreatePropertyInstanceIfNotExists<T>(T model, object? nestedModel, PropertyInfo property)
+        private object CreatePropertyInstanceIfNotExists<T>(T model, object? nestedModel, PropertyInfo property)
+            where T : notnull
         {
             if (nestedModel != null)
                 return nestedModel;
             nestedModel = Activator.CreateInstance(property.PropertyType);
-            property.SetValue(model, nestedModel);
+            SetPropertyValue(model, property, nestedModel);
+            //property.SetValue(model, nestedModel);
             return nestedModel;
         }
 
@@ -140,9 +155,28 @@ namespace ObisMapper
         /// </summary>
         /// <param name="type">The type for which to get the default value.</param>
         /// <returns>The default value for the type.</returns>
-        private static object? GetDefaultValue(Type type)
+        private object? GetDefaultValue(Type type)
         {
             return type.IsValueType ? Activator.CreateInstance(type) : null;
+        }
+
+        private void SetPropertyValue(object model, PropertyInfo property, object? value)
+        {
+            var setter = _propertySettersCache.GetOrAdd(property, CreateSetterDelegate);
+            setter(model, value);
+        }
+
+        private Action<object, object?> CreateSetterDelegate(PropertyInfo property)
+        {
+            var instance = Expression.Parameter(typeof(object), "instance");
+            var argument = Expression.Parameter(typeof(object), "argument");
+
+            var instanceCast = Expression.Convert(instance, property.DeclaringType!);
+            var argumentCast = Expression.Convert(argument, property.PropertyType);
+
+            var setterCall = Expression.Call(instanceCast, property.GetSetMethod()!, argumentCast);
+
+            return Expression.Lambda<Action<object, object?>>(setterCall, instance, argument).Compile();
         }
     }
 }
