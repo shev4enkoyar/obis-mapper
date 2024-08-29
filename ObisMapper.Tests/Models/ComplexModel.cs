@@ -1,14 +1,20 @@
+using ObisMapper.Attributes;
+
 namespace ObisMapper.Tests.Models;
 
 public class ComplexModel
 {
-    [LogicalNameMapping("1.1.1.1")] public int NumericValue { get; set; }
+    [LogicalNameMapping("1.1.1.1", DefaultValue = 25)]
+    public int NumericValue { get; set; }
 
-    [LogicalNameMapping("1.1.1.2")] public List<int> EnumeratedValue { get; set; } = [];
+    [LogicalNameMapping("1.1.1.2", DefaultValue = null)]
+    public List<int> EnumeratedValue { get; set; } = [];
 
-    protected bool Equals(ComplexModel other)
+    private bool Equals(ComplexModel other)
     {
-        return NumericValue == other.NumericValue && EnumeratedValue.SequenceEqual(other.EnumeratedValue);
+        return NumericValue == other.NumericValue
+               && ((EnumeratedValue == null! && other.EnumeratedValue == null!)
+                   || EnumeratedValue.SequenceEqual(other.EnumeratedValue));
     }
 
     public override bool Equals(object? obj)

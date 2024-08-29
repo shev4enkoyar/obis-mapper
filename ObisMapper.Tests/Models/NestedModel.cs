@@ -1,3 +1,5 @@
+using ObisMapper.Attributes;
+
 namespace ObisMapper.Tests.Models;
 
 public class NestedModel

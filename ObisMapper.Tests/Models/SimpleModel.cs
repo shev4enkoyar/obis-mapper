@@ -1,20 +1,25 @@
+using ObisMapper.Attributes;
+
 namespace ObisMapper.Tests.Models;
 
 public class SimpleModel
 {
     [LogicalNameMapping("1.1.1.1")] public int FirstNumericData { get; set; }
 
-    [LogicalNameMapping("1.1.1.2")] public int SecondNumericData { get; set; }
+    [LogicalNameMapping("1.1.1.2", DefaultValue = 10)]
+    public int SecondNumericData { get; set; }
 
     [LogicalNameMapping("1.1.2.1")] public string FirstStringData { get; set; }
 
-    [LogicalNameMapping("1.1.2.2")] public string SecondStringData { get; set; }
+    [LogicalNameMapping("1.1.2.2", DefaultValue = "error value")]
+    public string SecondStringData { get; set; }
 
     [LogicalNameMapping("1.1.3.1")] public double FirstDoubleData { get; set; }
 
-    [LogicalNameMapping("1.1.3.2")] public double SecondDoubleData { get; set; }
+    [LogicalNameMapping("1.1.3.2", DefaultValue = 3.14)]
+    public double SecondDoubleData { get; set; }
 
-    protected bool Equals(SimpleModel other)
+    private bool Equals(SimpleModel other)
     {
         return FirstNumericData == other.FirstNumericData && SecondNumericData == other.SecondNumericData &&
                FirstStringData == other.FirstStringData && SecondStringData == other.SecondStringData &&

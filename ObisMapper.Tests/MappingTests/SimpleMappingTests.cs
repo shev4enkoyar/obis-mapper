@@ -1,12 +1,13 @@
 using ObisMapper.Tests.Models;
 
-namespace ObisMapper.Tests;
+namespace ObisMapper.Tests.MappingTests;
 
-public class MappingTests
+public sealed class SimpleMappingTests
 {
     [Theory]
     [MemberData(nameof(GetCorrectTestDataForSimpleModel))]
-    public void Fill_SimpleModel_Correctly(List<ObisDataItem> data, SimpleModel expectedModel)
+    public void FillSimpleModel_ShouldUseTransmittedValues_WhenCorrectDataProvided(List<ObisDataItem> data,
+        SimpleModel expectedModel)
     {
         // Given
         var model = new SimpleModel();
@@ -20,36 +21,16 @@ public class MappingTests
     }
 
     [Theory]
-    [MemberData(nameof(GetCorrectTestDataForModelWithNestedModel))]
-    public void Fill_NestedModel_Correctly(List<ObisDataItem> data, ModelWithNestedModel expectedModelWithNestedModel)
+    [MemberData(nameof(GetIncorrectTestDataForSimpleModel))]
+    public void FillSimpleModel_ShouldUseDefaultValues_WhenInvalidDataProvided(List<ObisDataItem> data,
+        SimpleModel expectedModel)
     {
         // Given
-        var model = new ModelWithNestedModel();
+        var model = new SimpleModel();
 
         // When
         foreach (var dataItem in data)
             model.FillObisModel(dataItem.LogicalName, dataItem.Value);
-
-        // Then
-        Assert.Equal(model, expectedModelWithNestedModel);
-    }
-
-    [Theory]
-    [MemberData(nameof(GetCorrectTestDataForCustomMapping))]
-    public void Fill_ModelWithCustomMapping_Correctly(List<ObisDataItem> data, ComplexModel expectedModel)
-    {
-        // Given
-        var model = new ComplexModel();
-        var customPropertyMapping = new CustomPropertyMapping<ComplexModel>()
-            .CreateMapping(x => x.EnumeratedValue, (propertyData, newValue) =>
-            {
-                propertyData.Add((int)newValue);
-                return propertyData;
-            });
-
-        // When
-        foreach (var dataItem in data)
-            model.FillObisModel(dataItem.LogicalName, dataItem.Value, customMapping: customPropertyMapping);
 
         // Then
         Assert.Equal(model, expectedModel);
@@ -101,45 +82,27 @@ public class MappingTests
         ];
     }
 
-    public static IEnumerable<object[]> GetCorrectTestDataForModelWithNestedModel()
+    public static IEnumerable<object[]> GetIncorrectTestDataForSimpleModel()
     {
         yield return
         [
             new List<ObisDataItem>
             {
-                new("1.1.1.1", 1),
-                new("2.1.1.1", 2),
-                new("2.1.1.2", "Test")
+                new("1.1.1.1", Guid.Empty),
+                new("1.1.1.2", Guid.Empty),
+                new("1.1.2.1", Guid.Empty),
+                new("1.1.2.2", Guid.Empty),
+                new("1.1.3.1", Guid.Empty),
+                new("1.1.3.2", Guid.Empty)
             },
-            new ModelWithNestedModel
+            new SimpleModel
             {
-                SimpleData = 1,
-                NestedData = new NestedModel
-                {
-                    NestedIntData = 2,
-                    NestedStringData = "Test"
-                }
-            }
-        ];
-    }
-
-    public static IEnumerable<object[]> GetCorrectTestDataForCustomMapping()
-    {
-        yield return
-        [
-            new List<ObisDataItem>
-            {
-                new("1.1.1.1", 1),
-                new("1.1.1.2", 2),
-                new("1.1.1.2", 3),
-                new("1.1.1.2", 4),
-                new("1.1.1.2", 5),
-                new("1.1.1.2", 6)
-            },
-            new ComplexModel
-            {
-                NumericValue = 1,
-                EnumeratedValue = [2, 3, 4, 5, 6]
+                FirstNumericData = default,
+                SecondNumericData = 10,
+                FirstStringData = default!,
+                SecondStringData = "error value",
+                FirstDoubleData = default,
+                SecondDoubleData = 3.14
             }
         ];
     }
