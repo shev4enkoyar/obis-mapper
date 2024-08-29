@@ -1,16 +1,13 @@
 # obis-mapper
 
-**obis-mapper** is a lightweight .NET library designed to simplify the mapping of values to model properties based on
-logical names. It supports nested models, handles nullable types, and allows default values to be specified in case of
-conversion errors.
+**obis-mapper** is a lightweight .NET library that simplifies the mapping of values to model properties based on logical names. It supports nested models, handles nullable types, allows for default values in case of conversion errors, and provides customizable conversion logic through custom property mappings.
 
 ## Features
 
-- **Logical Name Mapping**: Map values to properties based on logical names with support for tags to distinguish between
-  different mappings.
-- **Nested Models**: Automatically handles nested models through recursion, simplifying complex object structures.
-- **Default Values**: Specify default values for properties in case of conversion errors, ensuring robustness in data
-  mapping.
+- **Logical Name Mapping**: Map values to properties based on logical names, with support for tags to distinguish between different mappings.
+- **Nested Models**: Automatically handles nested models through recursion, making it easy to work with complex object structures.
+- **Custom Property Mapping**: Define custom conversion logic for properties, allowing flexibility in how values are mapped and converted.
+- **Default Values**: Specify default values for properties in case of conversion errors, ensuring robustness in data mapping.
 - **Flexible Type Conversion**: Supports nullable types and provides customizable conversion handling.
 
 ## Installation
@@ -33,8 +30,7 @@ dotnet add package obis-mapper
 
 ### Basic Usage
 
-To start using obis-mapper, annotate your model properties with the `LogicalNameMappingAttribute` and optionally the
-`NestedModelAttribute` for nested models.
+To start using obis-mapper, annotate your model properties with the `LogicalNameMappingAttribute` and optionally the `NestedModelAttribute` for nested models.
 
 ```csharp
 using ObisMapper;
@@ -83,6 +79,21 @@ var complexModel = new ComplexModel();
 complexModel.FillObisModel("1.1.1.1", 100);
 ```
 
+### Custom Property Mapping
+
+To define custom conversion logic for properties, use the `CustomPropertyMapping` class.
+
+```csharp
+var customMapping = new CustomPropertyMapping<SimpleModel>()
+    .CreateMapping(
+        m => m.FirstNumericData, 
+        (currentValue, value) => currentValue + Convert.ToInt32(value)
+    );
+
+var model = new SimpleModel();
+model.FillObisModel("1.1.1.1", 100, customMapping: customMapping);
+```
+
 ### Handling Conversion Errors and Default Values
 
 You can specify a default value in the `LogicalNameMappingAttribute` to handle cases where conversion fails.
@@ -102,7 +113,7 @@ In this example, `ValueWithDefault` will be set to `42` if the provided value is
 
 ## Documentation
 
-In-development
+In-development.
 
 ## Contributing
 
@@ -111,3 +122,5 @@ Contributions are welcome! Please feel free to submit issues, feature requests, 
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
