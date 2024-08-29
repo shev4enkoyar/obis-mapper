@@ -20,11 +20,11 @@ namespace ObisMapper
         private readonly ConcurrentDictionary<PropertyInfo, bool> _nestedModelAttributePresenceCache =
             new ConcurrentDictionary<PropertyInfo, bool>();
 
-        private readonly ConcurrentDictionary<PropertyInfo, Action<object, object?>> _propertySettersCache =
-            new ConcurrentDictionary<PropertyInfo, Action<object, object?>>();
-
         private readonly ConcurrentDictionary<Type, PropertyInfo[]> _typePropertiesCache =
             new ConcurrentDictionary<Type, PropertyInfo[]>();
+        
+        private readonly ConcurrentDictionary<PropertyInfo, Action<object, object?>> _propertySettersCache =
+            new ConcurrentDictionary<PropertyInfo, Action<object, object?>>();
 
         /// <summary>
         ///     Fills the properties of the specified model with the provided value,
@@ -55,7 +55,6 @@ namespace ObisMapper
                     var nestedModel = CreatePropertyInstanceIfNotExists(model, property.GetValue(model), property);
                     nestedModel = FillObisModel(nestedModel, logicalName, value, tag);
                     SetPropertyValue(model, property, nestedModel);
-                    //property.SetValue(model, nestedModel);
                 }
                 else
                 {
@@ -93,7 +92,6 @@ namespace ObisMapper
                 if (attribute.LogicalName != logicalName || attribute.Tag != tag)
                     continue;
                 SetPropertyValue(model, property, GetConvertedValue(customMapping, attribute, property, model, value));
-                //property.SetValue(model, GetConvertedValue(customMapping, attribute, property, model, value));
             }
         }
 
@@ -139,14 +137,12 @@ namespace ObisMapper
         /// <param name="nestedModel">The current value of the nested model property.</param>
         /// <param name="property">The property to instantiate if null.</param>
         /// <returns>The existing or newly created instance of the nested model.</returns>
-        private object CreatePropertyInstanceIfNotExists<T>(T model, object? nestedModel, PropertyInfo property)
-            where T : notnull
+        private object CreatePropertyInstanceIfNotExists<T>(T model, object? nestedModel, PropertyInfo property) where T : notnull
         {
             if (nestedModel != null)
                 return nestedModel;
             nestedModel = Activator.CreateInstance(property.PropertyType);
             SetPropertyValue(model, property, nestedModel);
-            //property.SetValue(model, nestedModel);
             return nestedModel;
         }
 
@@ -159,7 +155,7 @@ namespace ObisMapper
         {
             return type.IsValueType ? Activator.CreateInstance(type) : null;
         }
-
+        
         private void SetPropertyValue(object model, PropertyInfo property, object? value)
         {
             var setter = _propertySettersCache.GetOrAdd(property, CreateSetterDelegate);
