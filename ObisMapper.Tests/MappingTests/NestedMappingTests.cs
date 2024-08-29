@@ -11,10 +11,11 @@ public sealed class NestedMappingTests
     {
         // Given
         var model = new ModelWithNestedModel();
+        var mapper = new LogicalNameMapper();
 
         // When
         foreach (var dataItem in data)
-            model.FillObisModel(dataItem.LogicalName, dataItem.Value);
+            mapper.FillObisModel(model, dataItem.LogicalName, dataItem.Value);
 
         // Then
         Assert.Equal(model, expectedModelWithNestedModel);

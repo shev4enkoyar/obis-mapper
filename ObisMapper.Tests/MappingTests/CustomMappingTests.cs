@@ -11,8 +11,10 @@ public sealed class CustomMappingTests
     {
         // Given
         var model = new ComplexModel();
+        var mapper = new LogicalNameMapper();
 
         var customPropertyMapping = new CustomPropertyMapping<ComplexModel>()
+            .CreateMapping(x => x.NumericValue, (_, newValue) => (int)newValue * 25)
             .CreateMapping(x => x.NumericValue, (_, newValue) => (int)newValue * 25)
             .CreateMapping(x => x.EnumeratedValue, (propertyData, newValue) =>
             {
@@ -22,7 +24,7 @@ public sealed class CustomMappingTests
 
         // When
         foreach (var dataItem in data)
-            model.FillObisModel(dataItem.LogicalName, dataItem.Value, customMapping: customPropertyMapping);
+            mapper.FillObisModel(model, dataItem.LogicalName, dataItem.Value, customMapping: customPropertyMapping);
 
         // Then
         Assert.Equal(model, expectedModel);
@@ -35,6 +37,7 @@ public sealed class CustomMappingTests
     {
         // Given
         var model = new ComplexModel();
+        var mapper = new LogicalNameMapper();
 
         var customPropertyMapping = new CustomPropertyMapping<ComplexModel>()
             .CreateMapping(x => x.NumericValue, (_, _) => throw new Exception())
@@ -42,7 +45,7 @@ public sealed class CustomMappingTests
 
         // When
         foreach (var dataItem in data)
-            model.FillObisModel(dataItem.LogicalName, dataItem.Value, customMapping: customPropertyMapping);
+            mapper.FillObisModel(model, dataItem.LogicalName, dataItem.Value, customMapping: customPropertyMapping);
 
         // Then
         Assert.Equal(model, expectedModel);
