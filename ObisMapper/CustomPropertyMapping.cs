@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -13,12 +14,14 @@ namespace ObisMapper
     /// </summary>
     public class CustomPropertyMapping<TModel>
     {
+        private readonly ConcurrentDictionary<LogicalNameMappingAttribute, Delegate> _mappings =
+            new ConcurrentDictionary<LogicalNameMappingAttribute, Delegate>();
+
         /// <summary>
         ///     Gets the dictionary of mappings between <see cref="LogicalNameMappingAttribute" />
         ///     and their corresponding conversion handlers.
         /// </summary>
-        public Dictionary<LogicalNameMappingAttribute, Delegate> Mappings { get; } =
-            new Dictionary<LogicalNameMappingAttribute, Delegate>();
+        public IReadOnlyDictionary<LogicalNameMappingAttribute, Delegate> Mappings => _mappings;
 
         /// <summary>
         ///     Creates a mapping between a property of the model and a conversion handler,
@@ -55,7 +58,7 @@ namespace ObisMapper
 
             foreach (var attribute in attributes)
                 if (tag.Equals(attribute.Tag))
-                    Mappings.Add(attribute, conversionHandler);
+                    _mappings.TryAdd(attribute, conversionHandler);
 
             return this;
         }
