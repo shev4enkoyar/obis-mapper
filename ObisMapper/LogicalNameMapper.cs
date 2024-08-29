@@ -19,10 +19,18 @@ namespace ObisMapper
         /// <param name="model">The model to fill.</param>
         /// <param name="logicalName">The logical name to match for property filling.</param>
         /// <param name="value">The value to set for the matching properties.</param>
-        /// <param name="tag">The tag to match for property filling (default is "default").</param>
+        /// <param name="tag">
+        ///     The tag to match for property filling (default is
+        ///     <see cref="LogicalNameMappingAttribute.DefaultTag" />).
+        /// </param>
+        /// <param name="customMapping">
+        ///     An optional parameter that provides custom property mappings for the model.
+        ///     If provided, these mappings will be used to convert values for properties
+        ///     that match the specified logical name and tag.
+        /// </param>
         /// <returns>The model with filled properties.</returns>
         public static T FillObisModel<T>(this T model, string logicalName, object value,
-            string tag = LogicalNameMappingAttribute.DefaultTag)
+            string tag = LogicalNameMappingAttribute.DefaultTag, CustomPropertyMapping<T>? customMapping = null)
             where T : notnull
         {
             var properties = model.GetType().GetProperties();
@@ -49,7 +57,11 @@ namespace ObisMapper
                         object? convertedValue;
                         try
                         {
-                            convertedValue = ConvertValue(value, property.PropertyType);
+                            if (customMapping != null &&
+                                customMapping.Mappings.TryGetValue(attribute, out var mappingDelegate))
+                                convertedValue = mappingDelegate.DynamicInvoke(property.GetValue(model), value);
+                            else
+                                convertedValue = ConvertValue(value, property.PropertyType);
                         }
                         catch (Exception)
                         {
