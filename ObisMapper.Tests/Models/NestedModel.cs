@@ -6,7 +6,7 @@ public class NestedModel
 
     [LogicalNameMapping("2.1.1.2")] public string NestedStringData { get; set; }
 
-    protected bool Equals(NestedModel other)
+    private bool Equals(NestedModel other)
     {
         return NestedIntData == other.NestedIntData && NestedStringData == other.NestedStringData;
     }

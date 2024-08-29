@@ -1,8 +1,8 @@
 namespace ObisMapper.Tests.Models;
 
-public class ObisDataItem
+public class ObisDataItem(string logicalName, object value)
 {
-    public string LogicalName { get; set; }
+    public string LogicalName { get; init; } = logicalName;
 
-    public object Value { get; set; }
+    public object Value { get; init; } = value;
 }

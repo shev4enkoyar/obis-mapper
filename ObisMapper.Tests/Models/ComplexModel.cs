@@ -2,13 +2,13 @@ namespace ObisMapper.Tests.Models;
 
 public class ComplexModel
 {
-    [LogicalNameMapping("1.1.1.1")] public int? SimpleData { get; set; }
+    [LogicalNameMapping("1.1.1.1")] public int NumericValue { get; set; }
 
-    [NestedModel] public NestedModel NestedData { get; set; }
+    [LogicalNameMapping("1.1.1.2")] public List<int> EnumeratedValue { get; set; } = [];
 
     protected bool Equals(ComplexModel other)
     {
-        return SimpleData == other.SimpleData && NestedData.Equals(other.NestedData);
+        return NumericValue == other.NumericValue && EnumeratedValue.SequenceEqual(other.EnumeratedValue);
     }
 
     public override bool Equals(object? obj)
@@ -21,7 +21,7 @@ public class ComplexModel
 
     public override int GetHashCode()
     {
-        return HashCode.Combine(SimpleData, NestedData);
+        return HashCode.Combine(NumericValue, EnumeratedValue);
     }
 
     public static bool operator ==(ComplexModel? left, ComplexModel? right)
