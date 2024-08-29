@@ -95,7 +95,7 @@ namespace ObisMapper
             }
         }
 
-        private object? GetConvertedValue<TModel>(CustomPropertyMapping<TModel>? customMapping,
+        private static object? GetConvertedValue<TModel>(CustomPropertyMapping<TModel>? customMapping,
             LogicalNameMappingAttribute attribute, PropertyInfo property, TModel model, object value)
             where TModel : notnull
         {
@@ -118,7 +118,7 @@ namespace ObisMapper
         /// <param name="value">The value to convert.</param>
         /// <param name="targetType">The type to convert the value to.</param>
         /// <returns>The converted value.</returns>
-        private object? ConvertValue(object? value, Type targetType)
+        private static object? ConvertValue(object? value, Type targetType)
         {
             if (!targetType.IsGenericType || targetType.GetGenericTypeDefinition() != typeof(Nullable<>))
                 return Convert.ChangeType(value, targetType);
@@ -151,7 +151,7 @@ namespace ObisMapper
         /// </summary>
         /// <param name="type">The type for which to get the default value.</param>
         /// <returns>The default value for the type.</returns>
-        private object? GetDefaultValue(Type type)
+        private static object? GetDefaultValue(Type type)
         {
             return type.IsValueType ? Activator.CreateInstance(type) : null;
         }
@@ -162,7 +162,7 @@ namespace ObisMapper
             setter(model, value);
         }
 
-        private Action<object, object?> CreateSetterDelegate(PropertyInfo property)
+        private static Action<object, object?> CreateSetterDelegate(PropertyInfo property)
         {
             var instance = Expression.Parameter(typeof(object), "instance");
             var argument = Expression.Parameter(typeof(object), "argument");
