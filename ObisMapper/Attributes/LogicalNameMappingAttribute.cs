@@ -1,6 +1,6 @@
 using System;
 
-namespace ObisMapper
+namespace ObisMapper.Attributes
 {
     /// <summary>
     ///     Attribute to map properties to specific logical names with an optional tag and default value.

@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Reflection;
+using ObisMapper.Attributes;
 
 namespace ObisMapper
 {
@@ -49,30 +50,38 @@ namespace ObisMapper
                         .GetCustomAttributes<LogicalNameMappingAttribute>(false)
                         .ToArray();
 
-                    foreach (var attribute in attributes)
-                    {
-                        if (attribute.LogicalName != logicalName || attribute.Tag != tag)
-                            continue;
-
-                        object? convertedValue;
-                        try
-                        {
-                            if (customMapping != null &&
-                                customMapping.Mappings.TryGetValue(attribute, out var mappingDelegate))
-                                convertedValue = mappingDelegate.DynamicInvoke(property.GetValue(model), value);
-                            else
-                                convertedValue = ConvertValue(value, property.PropertyType);
-                        }
-                        catch (Exception)
-                        {
-                            convertedValue = attribute.DefaultValue ?? GetDefaultValue(property.PropertyType);
-                        }
-
-                        property.SetValue(model, convertedValue);
-                    }
+                    FillPropertiesByAttributes(model, logicalName, value, tag, customMapping, attributes, property);
                 }
 
             return model;
+        }
+
+        private static void FillPropertiesByAttributes<TModel>(TModel model, string logicalName, object value,
+            string tag, CustomPropertyMapping<TModel>? customMapping, LogicalNameMappingAttribute[] attributes,
+            PropertyInfo property) where TModel : notnull
+        {
+            foreach (var attribute in attributes)
+            {
+                if (attribute.LogicalName != logicalName || attribute.Tag != tag)
+                    continue;
+                property.SetValue(model, GetConvertedValue(customMapping, attribute, property, model, value));
+            }
+        }
+
+        private static object? GetConvertedValue<TModel>(CustomPropertyMapping<TModel>? customMapping,
+            LogicalNameMappingAttribute attribute, PropertyInfo property, TModel model, object value)
+            where TModel : notnull
+        {
+            try
+            {
+                if (customMapping != null && customMapping.Mappings.TryGetValue(attribute, out var mappingDelegate))
+                    return mappingDelegate.DynamicInvoke(property.GetValue(model), value);
+                return ConvertValue(value, property.PropertyType);
+            }
+            catch (Exception)
+            {
+                return attribute.DefaultValue ?? GetDefaultValue(property.PropertyType);
+            }
         }
 
         /// <summary>

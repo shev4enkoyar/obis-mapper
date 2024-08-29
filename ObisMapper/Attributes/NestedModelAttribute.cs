@@ -1,6 +1,6 @@
 using System;
 
-namespace ObisMapper
+namespace ObisMapper.Attributes
 {
     /// <summary>
     ///     Attribute to mark properties as nested models that should be recursively processed
