@@ -20,24 +20,24 @@ namespace ObisMapper
         private readonly ConcurrentDictionary<PropertyInfo, bool> _nestedModelAttributePresenceCache =
             new ConcurrentDictionary<PropertyInfo, bool>();
 
-        private readonly ConcurrentDictionary<Type, PropertyInfo[]> _typePropertiesCache =
-            new ConcurrentDictionary<Type, PropertyInfo[]>();
-        
         private readonly ConcurrentDictionary<PropertyInfo, Action<object, object?>> _propertySettersCache =
             new ConcurrentDictionary<PropertyInfo, Action<object, object?>>();
 
+        private readonly ConcurrentDictionary<Type, PropertyInfo[]> _typePropertiesCache =
+            new ConcurrentDictionary<Type, PropertyInfo[]>();
+
         /// <summary>
-        ///     Fills the properties of the specified model with the provided value,
-        ///     based on the logical name and tag. Recursively processes nested models
-        ///     marked with <see cref="NestedModelAttribute" />.
+        ///     Fills the properties of the specified model with the provided value based on the logical name and tag.
+        ///     Recursively processes nested models marked with <see cref="NestedModelAttribute" />.
+        ///     This method uses caching mechanisms to optimize reflection-based operations such as retrieving
+        ///     property attributes, checking for nested models, and setting property values.
         /// </summary>
         /// <typeparam name="T">The type of the model.</typeparam>
         /// <param name="model">The model to fill.</param>
         /// <param name="logicalName">The logical name to match for property filling.</param>
         /// <param name="value">The value to set for the matching properties.</param>
         /// <param name="tag">
-        ///     The tag to match for property filling (default is
-        ///     <see cref="LogicalNameMappingAttribute.DefaultTag" />).
+        ///     The tag to match for property filling. The default value is <see cref="LogicalNameMappingAttribute.DefaultTag" />.
         /// </param>
         /// <param name="customMapping">
         ///     An optional parameter that provides custom property mappings for the model.
@@ -111,13 +111,6 @@ namespace ObisMapper
             }
         }
 
-        /// <summary>
-        ///     Converts the provided value to the specified target type,
-        ///     handling nullable types.
-        /// </summary>
-        /// <param name="value">The value to convert.</param>
-        /// <param name="targetType">The type to convert the value to.</param>
-        /// <returns>The converted value.</returns>
         private static object? ConvertValue(object? value, Type targetType)
         {
             if (!targetType.IsGenericType || targetType.GetGenericTypeDefinition() != typeof(Nullable<>))
@@ -129,15 +122,8 @@ namespace ObisMapper
             return Convert.ChangeType(value, underlyingType!);
         }
 
-        /// <summary>
-        ///     Creates an instance of a property if it is null and returns the instance.
-        /// </summary>
-        /// <typeparam name="T">The type of the model.</typeparam>
-        /// <param name="model">The model that contains the property.</param>
-        /// <param name="nestedModel">The current value of the nested model property.</param>
-        /// <param name="property">The property to instantiate if null.</param>
-        /// <returns>The existing or newly created instance of the nested model.</returns>
-        private object CreatePropertyInstanceIfNotExists<T>(T model, object? nestedModel, PropertyInfo property) where T : notnull
+        private object CreatePropertyInstanceIfNotExists<T>(T model, object? nestedModel, PropertyInfo property)
+            where T : notnull
         {
             if (nestedModel != null)
                 return nestedModel;
@@ -146,16 +132,11 @@ namespace ObisMapper
             return nestedModel;
         }
 
-        /// <summary>
-        ///     Returns the default value for the specified type.
-        /// </summary>
-        /// <param name="type">The type for which to get the default value.</param>
-        /// <returns>The default value for the type.</returns>
         private static object? GetDefaultValue(Type type)
         {
             return type.IsValueType ? Activator.CreateInstance(type) : null;
         }
-        
+
         private void SetPropertyValue(object model, PropertyInfo property, object? value)
         {
             var setter = _propertySettersCache.GetOrAdd(property, CreateSetterDelegate);

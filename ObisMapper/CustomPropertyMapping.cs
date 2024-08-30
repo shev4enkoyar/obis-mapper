@@ -24,17 +24,17 @@ namespace ObisMapper
         public IReadOnlyDictionary<LogicalNameMappingAttribute, Delegate> Mappings => _mappings;
 
         /// <summary>
-        ///     Creates a mapping between a property of the model and a conversion handler,
-        ///     allowing for custom conversion logic based on the specified tag.
+        ///     Creates a mapping between a property of the model and a conversion handler, allowing for custom conversion logic
+        ///     based on the specified tag. This mapping is cached to ensure that subsequent value conversions are efficient.
         /// </summary>
         /// <typeparam name="TDestination">The type of the destination property.</typeparam>
         /// <param name="propertyExpression">
-        ///     An expression that specifies the property of the model to map.
+        ///     An expression that specifies the property of the model to map. This expression should be a lambda
+        ///     expression that directly references a property of the model.
         /// </param>
         /// <param name="conversionHandler">
-        ///     A function that defines how to convert a value for the specified property.
-        ///     The first parameter is the current property value, and the second parameter
-        ///     is the value to be converted.
+        ///     A function that defines how to convert a value for the specified property. The function takes
+        ///     the current property value and the new value as inputs and returns the converted value.
         /// </param>
         /// <param name="tag">
         ///     The tag used to distinguish different mappings for the same logical name.
