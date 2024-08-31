@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Concurrent;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -13,18 +12,7 @@ namespace ObisMapper
     /// </summary>
     public class LogicalNameMapper
     {
-        private readonly ConcurrentDictionary<PropertyInfo, LogicalNameMappingAttribute[]>
-            _logicalNameMappingAttributeCache =
-                new ConcurrentDictionary<PropertyInfo, LogicalNameMappingAttribute[]>();
-
-        private readonly ConcurrentDictionary<PropertyInfo, bool> _nestedModelAttributePresenceCache =
-            new ConcurrentDictionary<PropertyInfo, bool>();
-
-        private readonly ConcurrentDictionary<PropertyInfo, Action<object, object?>> _propertySettersCache =
-            new ConcurrentDictionary<PropertyInfo, Action<object, object?>>();
-
-        private readonly ConcurrentDictionary<Type, PropertyInfo[]> _typePropertiesCache =
-            new ConcurrentDictionary<Type, PropertyInfo[]>();
+        private readonly MappingCache _cache = new MappingCache();
 
         /// <summary>
         ///     Fills the properties of the specified model with the provided value based on the logical name and tag.
@@ -68,18 +56,18 @@ namespace ObisMapper
 
         private PropertyInfo[] GetTypeProperties(Type type)
         {
-            return _typePropertiesCache.GetOrAdd(type, t => t.GetProperties());
+            return _cache.TypePropertiesCache.GetOrAdd(type, t => t.GetProperties());
         }
 
         private bool IsNestedModel(PropertyInfo property)
         {
-            return _nestedModelAttributePresenceCache.GetOrAdd(property,
+            return _cache.NestedModelAttributePresenceCache.GetOrAdd(property,
                 prop => prop.IsDefined(typeof(NestedModelAttribute), false));
         }
 
         private LogicalNameMappingAttribute[] GetLogicalNameMappingAttributes(PropertyInfo property)
         {
-            return _logicalNameMappingAttributeCache.GetOrAdd(property, prop =>
+            return _cache.LogicalNameMappingAttributeCache.GetOrAdd(property, prop =>
                 prop.GetCustomAttributes<LogicalNameMappingAttribute>(false).ToArray());
         }
 
@@ -139,7 +127,7 @@ namespace ObisMapper
 
         private void SetPropertyValue(object model, PropertyInfo property, object? value)
         {
-            var setter = _propertySettersCache.GetOrAdd(property, CreateSetterDelegate);
+            var setter = _cache.PropertySettersCache.GetOrAdd(property, CreateSetterDelegate);
             setter(model, value);
         }
 
