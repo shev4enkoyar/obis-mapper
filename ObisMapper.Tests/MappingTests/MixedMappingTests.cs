@@ -9,11 +9,14 @@ public sealed class MixedMappingTests
     [Fact]
     public void AbstractMappingTest()
     {
+        var model = new TestModel();
+        IObisMapper mapper = new ObisMapper();
         var testModelConverter = new TestModelConverter();
+        var result = mapper.PartialMap(model, new ObisDataModel("1.1.1.1", 1), testModelConverter);
     }
 }
 
-internal class TestModel : IObisModel
+public class TestModel : IObisModel
 {
     public int Id { get; set; }
 
@@ -34,7 +37,8 @@ internal class TestModelConverter : AbstractObisModelConverter<TestModel>
         RuleFor(x => x.Id)
             .AddLogicalName(new LogicalNameModel("1.1.1.1"))
             .AddDefaultValue(13)
-            .AddConverter(value => (int)value);
+            .AddConverter(value => (int)value)
+            .AddValidator((x, token) => Task.FromResult(x > 5));
 
         RuleFor(x => x.Name)
             .AddLogicalName(new LogicalNameModel("1.1.1.2"))

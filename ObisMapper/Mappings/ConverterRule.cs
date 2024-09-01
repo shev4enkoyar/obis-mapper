@@ -1,41 +1,37 @@
-using ObisMapper.Models;
+using System;
+using ObisMapper.Abstractions;
 
 namespace ObisMapper.Mappings
 {
-    public partial class ConverterRule<TDestination>
+    internal partial class ConverterRule<TDestination> : AbstractRule, ICustomRule<TDestination>
     {
-        internal ConverterRule()
-        {
-        }
+        private string _tag = "";
+        internal IConversionHandler<TDestination>? ConversionHandler { get; private set; }
 
-        internal TDestination DefaultValue { get; private set; } = default!;
+        internal IValidationHandler<TDestination>? ValidationHandler { get; private set; }
+
+
+        internal override Type DestinationType => typeof(TDestination);
+
+        internal override string Tag => _tag;
+
 
         #region Default values
 
-        public ConverterRule<TDestination> AddDefaultValue(TDestination defaultValue)
+        public ICustomRule<TDestination> AddDefaultValue(TDestination defaultValue)
         {
-            DefaultValue = defaultValue;
+            _defaultValue = defaultValue;
             return this;
         }
 
-        #endregion
-
-        #region Logical names
-
-        public ConverterRule<TDestination> AddLogicalName(LogicalNameModel logicalName)
+        public ICustomRule<TDestination> AddTag(string tag)
         {
+            _tag = tag;
             return this;
         }
 
-        public ConverterRule<TDestination> AddLogicalName(params LogicalNameModel[] logicalNames)
-        {
-            return this;
-        }
-
-        public ConverterRule<TDestination> AddLogicalName(LogicalNameModelGroup logicalNameGroup)
-        {
-            return this;
-        }
+        private TDestination _defaultValue = default!;
+        internal override object DefaultValue => _defaultValue;
 
         #endregion
     }

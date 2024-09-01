@@ -5,10 +5,8 @@ using ObisMapper.Abstractions.Mappings.Validators;
 
 namespace ObisMapper.Mappings
 {
-    public partial class ConverterRule<TDestination>
+    internal partial class ConverterRule<TDestination>
     {
-        internal IValidationHandler<TDestination> ValidationHandler;
-
         /// <summary>
         ///     Adds a synchronous validation rule to the converter. The provided predicate function will be used to validate the
         ///     converted value after conversion.
@@ -18,7 +16,7 @@ namespace ObisMapper.Mappings
         ///     a boolean indicating whether the value is valid.
         /// </param>
         /// <returns>The current instance of <see cref="ConverterRule{TDestination}" />, allowing for method chaining.</returns>
-        public ConverterRule<TDestination> AddValidator(Func<TDestination, bool> predicate)
+        public ICustomRule<TDestination> AddValidator(Func<TDestination, bool> predicate)
         {
             ValidationHandler = new ConverterRuleValidatorHandler<TDestination>(predicate, null);
             return this;
@@ -34,7 +32,7 @@ namespace ObisMapper.Mappings
         /// </param>
         /// <param name="message">A custom error message to be used if validation fails.</param>
         /// <returns>The current instance of <see cref="ConverterRule{TDestination}" />, allowing for method chaining.</returns>
-        public ConverterRule<TDestination> AddValidator(Func<TDestination, bool> predicate, string message)
+        public ICustomRule<TDestination> AddValidator(Func<TDestination, bool> predicate, string message)
         {
             ValidationHandler = new ConverterRuleValidatorHandler<TDestination>(predicate, message);
             return this;
@@ -50,7 +48,7 @@ namespace ObisMapper.Mappings
         ///     <see cref="CancellationToken" /> as input and returns a Task&lt;bool&gt; indicating whether the value is valid.
         /// </param>
         /// <returns>The current instance of <see cref="ConverterRule{TDestination}" />, allowing for method chaining.</returns>
-        public ConverterRule<TDestination> AddValidator(
+        public ICustomRule<TDestination> AddValidator(
             Func<TDestination, CancellationToken, Task<bool>> predicate)
         {
             ValidationHandler = new ConverterRuleValidatorHandlerAsync<TDestination>(predicate, null);
@@ -67,7 +65,7 @@ namespace ObisMapper.Mappings
         /// </param>
         /// <param name="message">A custom error message to be used if validation fails.</param>
         /// <returns>The current instance of <see cref="ConverterRule{TDestination}" />, allowing for method chaining.</returns>
-        public ConverterRule<TDestination> AddValidator(
+        public ICustomRule<TDestination> AddValidator(
             Func<TDestination, CancellationToken, Task<bool>> predicate, string message)
         {
             ValidationHandler = new ConverterRuleValidatorHandlerAsync<TDestination>(predicate, message);

@@ -1,7 +1,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ObisMapper.Abstractions.Mappings.Converters
+namespace ObisMapper.Abstractions
 {
     public interface IConversionHandler<TDestination>
     {

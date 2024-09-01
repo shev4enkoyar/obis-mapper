@@ -1,7 +1,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ObisMapper.Abstractions.Mappings.Validators
+namespace ObisMapper.Abstractions
 {
     public interface IValidationHandler<TDestination>
     {

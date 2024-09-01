@@ -9,13 +9,22 @@ namespace ObisMapper.Abstractions
     {
         // Default
         TModel Map<TModel>(
-            TModel model,
             IEnumerable<ObisDataModel> data,
-            AbstractObisModelConverter<TModel> converter) where TModel : IObisModel;
+            AbstractObisModelConverter<TModel> converter) where TModel : IObisModel, new();
 
         Task<TModel> MapAsync<TModel>(
-            TModel model,
             IEnumerable<ObisDataModel> data,
+            AbstractObisModelConverter<TModel> converter,
+            CancellationToken cancellationToken = default) where TModel : IObisModel;
+
+        TModel PartialMap<TModel>(
+            TModel model,
+            ObisDataModel data,
+            AbstractObisModelConverter<TModel> converter, string tag = "") where TModel : IObisModel;
+
+        TModel PartialMapAsync<TModel>(
+            TModel model,
+            ObisDataModel data,
             AbstractObisModelConverter<TModel> converter,
             CancellationToken cancellationToken = default) where TModel : IObisModel;
 

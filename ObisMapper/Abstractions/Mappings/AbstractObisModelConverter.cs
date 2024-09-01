@@ -22,9 +22,9 @@ namespace ObisMapper.Abstractions.Mappings
     /// </remarks>
     public abstract class AbstractObisModelConverter<TModel> where TModel : IObisModel
     {
-        private readonly Dictionary<PropertyInfo, object> _rules = new Dictionary<PropertyInfo, object>();
+        private readonly Dictionary<PropertyInfo, AbstractRule> _rules = new Dictionary<PropertyInfo, AbstractRule>();
 
-        internal IReadOnlyDictionary<PropertyInfo, object> Rules => _rules;
+        internal IReadOnlyDictionary<PropertyInfo, AbstractRule> Rules => _rules;
 
         /// <summary>
         ///     Provides a starting point for defining conversion rules for a specific property of the model.
@@ -36,10 +36,10 @@ namespace ObisMapper.Abstractions.Mappings
         ///     An expression that identifies the property of the model for which the conversion rule is being defined.
         /// </param>
         /// <returns>
-        ///     A <see cref="ConverterRule{TDestination}" /> object that allows for further configuration of the conversion rules
+        ///     A <see cref="ConverterAbstractRule{TDestination}" /> object that allows for further configuration of the conversion rules
         ///     and validation for the specified property.
         /// </returns>
-        protected ConverterRule<TDestination> RuleFor<TDestination>(
+        protected ICustomRule<TDestination> RuleFor<TDestination>(
             Expression<Func<TModel, TDestination>> propertyExpression)
         {
             var propertyInfo = (propertyExpression.Body as MemberExpression)?.Member as PropertyInfo;
