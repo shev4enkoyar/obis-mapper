@@ -13,5 +13,7 @@ namespace ObisMapper.Mappings
         internal abstract List<LogicalNameModel> LogicalNameModels { get; }
 
         internal abstract string Tag { get; }
+
+        internal abstract bool IsPrimary { get; }
     }
 }

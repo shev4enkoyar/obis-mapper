@@ -11,6 +11,8 @@ namespace ObisMapper.Mappings
 
         ICustomRule<TDestination> AddTag(string tag);
 
+        ICustomRule<TDestination> IsPrimary();
+
         #region Logical names
 
         ICustomRule<TDestination> AddLogicalName(LogicalNameModel logicalName);
@@ -25,9 +27,18 @@ namespace ObisMapper.Mappings
 
         ICustomRule<TDestination> AddConverter(Func<object, TDestination> conversionHandler);
 
+        ICustomRule<TDestination> AddConverterAsync(
+            Func<object, CancellationToken, Task<TDestination>> conversionHandler);
+
         ICustomRule<TDestination> AddConverter(Func<TDestination, object, TDestination> conversionHandler);
 
+        ICustomRule<TDestination> AddConverterAsync(
+            Func<TDestination, object, CancellationToken, Task<TDestination>> conversionHandler);
+
         ICustomRule<TDestination> AddConverter(Func<TDestination, string, object, TDestination> conversionHandler);
+
+        ICustomRule<TDestination> AddConverterAsync(
+            Func<TDestination, string, object, CancellationToken, Task<TDestination>> conversionHandler);
 
         #endregion
 

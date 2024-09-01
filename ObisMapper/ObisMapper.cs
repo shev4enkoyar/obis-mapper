@@ -37,17 +37,18 @@ namespace ObisMapper
             foreach (var property in GetTypeProperties(model.GetType()))
                 if (rules.TryGetValue(property, out var rule))
                 {
-                    if (!rule.LogicalNameModels.Any(x => x.LogicalName.Equals(data.LogicalName) && x.Tag.Equals(tag)))
+                    // TODO: Check another rules for obis code with tag and if not exists use primary
+                    if (!ValidateRuleDataAccess(rule, data.LogicalName, tag))
                         continue;
 
                     var genericRule = GetGenericConverterRule(rule);
                     if (genericRule == null)
                         continue;
 
-                    var result = ConvertingStep(model, rule.DestinationType, genericRule, property, data);
+                    var result = ConversionStep(model, rule, genericRule, property, data);
                     property.SetValue(model, result);
 
-                    var validationResult = ValidationStep(rule.DestinationType, genericRule, data.Value);
+                    var validationResult = ValidationStep(rule.DestinationType, genericRule, result);
                     if (!validationResult)
                         property.SetValue(model, rule.DefaultValue);
                 }
@@ -62,45 +63,61 @@ namespace ObisMapper
             throw new NotImplementedException();
         }
 
+        private static bool ValidateRuleDataAccess(AbstractRule rule, string logicalName, string tag)
+        {
+            if (rule.LogicalNameModels.Any(x => x.LogicalName.Equals(logicalName)
+                                                && (x.Tag.Equals(tag) || rule.IsPrimary)))
+                return true;
+
+            return false;
+        }
+
         private object? GetGenericConverterRule(AbstractRule rule)
         {
             var genericRuleType = typeof(ConverterRule<>).MakeGenericType(rule.DestinationType);
             return Convert.ChangeType(rule, genericRuleType);
         }
 
-        private object ConvertingStep<TModel>(TModel model, Type destinationType, object genericRule,
+        private object? ConversionStep<TModel>(TModel model, AbstractRule rule, object genericRule,
             PropertyInfo property, ObisDataModel dataModel)
         {
             var conversionHandlerProperty = GetPrivateProperty(genericRule, "ConversionHandler");
 
-            if (conversionHandlerProperty == null)
-                return null; // TODO: Use default conversion handler
+            var conversionHandler = conversionHandlerProperty?.GetValue(genericRule);
+            if (conversionHandler == null)
+                return DefaultValueConverter(rule.DestinationType, dataModel.Value, rule.DefaultValue);
 
-            var conversionMethod = typeof(IConversionHandler<>)
-                .MakeGenericType(destinationType)
-                .GetMethod("Convert");
+            var conversionInvoker = CreateExpression(typeof(IConversionHandler<>), rule.DestinationType, "Convert");
 
-            var conversionInvoker = CreateExpression(conversionMethod);
+            try
+            {
+                return conversionInvoker.Invoke(conversionHandler, property.GetValue(model), dataModel.Value,
+                    dataModel.LogicalName);
+            }
+            catch (Exception e)
+            {
+                return DefaultValueConverter(rule.DestinationType, dataModel.Value, rule.DefaultValue);
+            }
+        }
 
-            var conversionHandler = conversionHandlerProperty.GetValue(genericRule);
+        private static object? DefaultValueConverter(Type destinationType, object? value, object? defaultValue)
+        {
+            if (value != null && value.GetType() == destinationType) return value;
 
-            return conversionInvoker.Invoke(conversionHandler, property.GetValue(model), dataModel.Value,
-                dataModel.LogicalName);
+            if (value == null) return defaultValue;
+
+            var convertedValue = Convert.ChangeType(value, destinationType);
+            return convertedValue ?? defaultValue;
         }
 
         private bool ValidationStep(Type destinationType, object genericRule, object value)
         {
             var validationHandlerProperty = GetPrivateProperty(genericRule, "ValidationHandler");
 
-            if (validationHandlerProperty == null) return true;
+            var validationHandler = validationHandlerProperty?.GetValue(genericRule);
+            if (validationHandler == null) return true;
 
-            var validateMethod = typeof(IValidationHandler<>)
-                .MakeGenericType(destinationType)
-                .GetMethod("Validate");
-
-            var validationInvoker = CreateExpression(validateMethod);
-
-            var validationHandler = validationHandlerProperty.GetValue(genericRule);
+            var validationInvoker = CreateExpression(typeof(IValidationHandler<>), destinationType, "Validate");
 
             return (bool)validationInvoker.Invoke(validationHandler, value);
         }
@@ -114,6 +131,15 @@ namespace ObisMapper
         private PropertyInfo[] GetTypeProperties(Type type)
         {
             return _cache.TypePropertiesCache.GetOrAdd(type, t => t.GetProperties());
+        }
+
+        private static Invoker CreateExpression(Type mainType, Type genericType, string methodName)
+        {
+            var method = mainType
+                .MakeGenericType(genericType)
+                .GetMethod(methodName);
+
+            return CreateExpression(method);
         }
 
         private static Invoker CreateExpression(MethodInfo method)

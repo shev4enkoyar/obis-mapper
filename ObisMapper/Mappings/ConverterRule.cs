@@ -15,6 +15,8 @@ namespace ObisMapper.Mappings
 
         internal override string Tag => _tag;
 
+        internal override bool IsPrimary => _isPrimary;
+
 
         #region Default values
 
@@ -30,7 +32,14 @@ namespace ObisMapper.Mappings
             return this;
         }
 
+        ICustomRule<TDestination> ICustomRule<TDestination>.IsPrimary()
+        {
+            _isPrimary = true;
+            return this;
+        }
+
         private TDestination _defaultValue = default!;
+        private bool _isPrimary;
         internal override object DefaultValue => _defaultValue;
 
         #endregion

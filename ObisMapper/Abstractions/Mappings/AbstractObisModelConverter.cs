@@ -36,7 +36,8 @@ namespace ObisMapper.Abstractions.Mappings
         ///     An expression that identifies the property of the model for which the conversion rule is being defined.
         /// </param>
         /// <returns>
-        ///     A <see cref="ConverterAbstractRule{TDestination}" /> object that allows for further configuration of the conversion rules
+        ///     A <see cref="ConverterAbstractRule{TDestination}" /> object that allows for further configuration of the conversion
+        ///     rules
         ///     and validation for the specified property.
         /// </returns>
         protected ICustomRule<TDestination> RuleFor<TDestination>(
@@ -50,7 +51,7 @@ namespace ObisMapper.Abstractions.Mappings
             var rule = new ConverterRule<TDestination>();
             if (!_rules.TryAdd(propertyInfo, rule))
                 // TODO: Add custom exception
-                throw new Exception("Rule for this property already exists");
+                throw new Exception("Rule for this property is already exists");
             return rule;
         }
     }

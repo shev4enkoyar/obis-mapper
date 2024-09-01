@@ -1,8 +1,9 @@
+using ObisMapper.Abstractions;
 using ObisMapper.Attributes;
 
 namespace ObisMapper.Tests.Models;
 
-public class SimpleModel
+public class SimpleModel : IObisModel
 {
     [LogicalNameMapping("1.1.1.1")] public int FirstNumericData { get; set; }
 
