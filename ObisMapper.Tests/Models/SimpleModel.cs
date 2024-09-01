@@ -1,4 +1,4 @@
-using ObisMapper.Abstractions;
+using ObisMapper.Abstractions.Fluent;
 using ObisMapper.Attributes;
 
 namespace ObisMapper.Tests.Models;

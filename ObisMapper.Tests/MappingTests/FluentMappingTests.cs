@@ -1,5 +1,5 @@
 using ObisMapper.Abstractions;
-using ObisMapper.Abstractions.Mappings;
+using ObisMapper.Fluent;
 using ObisMapper.Models;
 using ObisMapper.Tests.Models;
 
@@ -9,47 +9,22 @@ public class FluentMappingTests
 {
     [Theory]
     [MemberData(nameof(GetCorrectTestDataForSimpleModel))]
-    public void FillFluentSimpleModel_ShouldUseTransmittedValues_WhenCorrectDataProvided(List<ObisDataModel> data,
+    public async Task FillFluentSimpleModel_ShouldUseTransmittedValues_WhenCorrectDataProvided(List<ObisDataModel> data,
         SimpleModel expectedModel)
     {
         // Given
         var model = new SimpleModel();
-        ObisMapper mapper = new ObisMapper();
-        SimpleModelConverter converter = new SimpleModelConverter();
+        var mapper = new ObisMapper();
+        var configuration = new SimpleModelConfiguration();
 
         // When
         foreach (var dataItem in data)
-            mapper.PartialMap(model, dataItem, converter);
+            await mapper.PartialMapAsync(model, dataItem, configuration);
 
         // Then
         Assert.Equal(model, expectedModel);
     }
 
-    private class SimpleModelConverter : AbstractObisModelConverter<SimpleModel>
-    {
-        public SimpleModelConverter()
-        {
-            RuleFor(x => x.FirstNumericData)
-                .AddLogicalName(new LogicalNameModel("1.1.1.1"))
-                .AddDefaultValue(10);
-
-            RuleFor(x => x.SecondNumericData)
-                .AddLogicalName(new LogicalNameModel("1.1.1.2"));
-            
-            RuleFor(x => x.FirstStringData)
-                .AddLogicalName(new LogicalNameModel("1.1.2.1"));
-            
-            RuleFor(x => x.SecondStringData)
-                .AddLogicalName(new LogicalNameModel("1.1.2.2"));
-            
-            RuleFor(x => x.FirstDoubleData)
-                .AddLogicalName(new LogicalNameModel("1.1.3.1"));
-            
-            RuleFor(x => x.SecondDoubleData)
-                .AddLogicalName(new LogicalNameModel("1.1.3.2"));
-        }
-    }
-    
     public static IEnumerable<object[]> GetCorrectTestDataForSimpleModel()
     {
         yield return
@@ -94,5 +69,32 @@ public class FluentMappingTests
                 SecondDoubleData = double.MinValue
             }
         ];
+    }
+
+    private class SimpleModelConfiguration : ModelConfiguration<SimpleModel>
+    {
+        public SimpleModelConfiguration()
+        {
+            RuleFor(x => x.FirstNumericData)
+                .AddLogicalName(new LogicalNameModel("1.1.1.1"))
+                .AddValidatorAsync((x, token) => { return Task.FromResult(true); })
+                .AddValidator(x => x is < 5 or int.MaxValue)
+                .AddDefaultValue(10);
+
+            RuleFor(x => x.SecondNumericData)
+                .AddLogicalName(new LogicalNameModel("1.1.1.2"));
+
+            RuleFor(x => x.FirstStringData)
+                .AddLogicalName(new LogicalNameModel("1.1.2.1"));
+
+            RuleFor(x => x.SecondStringData)
+                .AddLogicalName(new LogicalNameModel("1.1.2.2"));
+
+            RuleFor(x => x.FirstDoubleData)
+                .AddLogicalName(new LogicalNameModel("1.1.3.1"));
+
+            RuleFor(x => x.SecondDoubleData)
+                .AddLogicalName(new LogicalNameModel("1.1.3.2"));
+        }
     }
 }

@@ -1,14 +1,16 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using ObisMapper.Abstractions.Fluent;
 
-namespace ObisMapper.Abstractions.Mappings.Converters
+namespace ObisMapper.Fluent.Conversions
 {
-    internal class ValueConversionHandlerAsync<TDestination> : IConversionHandler<TDestination>
+    internal class InitialValueValueConversionHandlerAsync<TDestination> : IConversionHandler<TDestination>
     {
-        private readonly Func<object, CancellationToken, Task<TDestination>> _conversionFunc;
+        private readonly Func<TDestination, object, CancellationToken, Task<TDestination>> _conversionFunc;
 
-        internal ValueConversionHandlerAsync(Func<object, CancellationToken, Task<TDestination>> conversionFunc)
+        internal InitialValueValueConversionHandlerAsync(
+            Func<TDestination, object, CancellationToken, Task<TDestination>> conversionFunc)
         {
             _conversionFunc = conversionFunc;
         }
@@ -21,7 +23,7 @@ namespace ObisMapper.Abstractions.Mappings.Converters
         public async Task<TDestination> ConvertAsync(TDestination initial, object value, string? logicalName = null,
             CancellationToken cancellationToken = default)
         {
-            return await _conversionFunc.Invoke(value, cancellationToken).ConfigureAwait(false);
+            return await _conversionFunc.Invoke(initial, value, cancellationToken).ConfigureAwait(false);
         }
     }
 }

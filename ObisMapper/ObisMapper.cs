@@ -1,54 +1,74 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using ObisMapper.Abstractions;
-using ObisMapper.Abstractions.Mappings;
-using ObisMapper.Mappings;
+using ObisMapper.Abstractions.Fluent;
+using ObisMapper.Fluent;
+using ObisMapper.Fluent.Steps;
 
 namespace ObisMapper
 {
+    /// <summary>
+    ///     Implements the IObisMapper interface to provide mapping capabilities for OBIS data models.
+    /// </summary>
     public class ObisMapper : IObisMapper
     {
         private readonly MappingCache _cache = new MappingCache();
 
-        public TModel Map<TModel>(IEnumerable<ObisDataModel> data, AbstractObisModelConverter<TModel> converter)
+        /// <summary>
+        ///     Maps a collection of OBIS data models to a new instance of the specified model type.
+        /// </summary>
+        public TModel Map<TModel>(IEnumerable<ObisDataModel> data, ModelConfiguration<TModel> configuration,
+            string tag = "")
             where TModel : IObisModel, new()
         {
-            throw new NotImplementedException();
+            var model = new TModel();
+            foreach (var dataModel in data)
+                PartialMap(model, dataModel, configuration, tag);
+
+            return model;
         }
 
+        /// <summary>
+        ///     Asynchronously maps a collection of OBIS data models to a new instance of the specified model type.
+        /// </summary>
         public async Task<TModel> MapAsync<TModel>(IEnumerable<ObisDataModel> data,
-            AbstractObisModelConverter<TModel> converter,
-            CancellationToken cancellationToken = default) where TModel : IObisModel
+            ModelConfiguration<TModel> configuration,
+            string tag = "",
+            CancellationToken cancellationToken = default) where TModel : IObisModel, new()
         {
-            throw new NotImplementedException();
+            var model = new TModel();
+            foreach (var dataModel in data)
+                await PartialMapAsync(model, dataModel, configuration, tag, cancellationToken);
+
+            return model;
         }
 
-        public TModel PartialMap<TModel>(TModel model, ObisDataModel data, AbstractObisModelConverter<TModel> converter,
+        /// <summary>
+        ///     Partially maps data from a single OBIS data model to an existing instance of the specified model type.
+        /// </summary>
+        public TModel PartialMap<TModel>(TModel model, ObisDataModel data, ModelConfiguration<TModel> configuration,
             string tag = "")
             where TModel : IObisModel
         {
-            var rules = converter.Rules;
-
             foreach (var property in GetTypeProperties(model.GetType()))
-                if (rules.TryGetValue(property, out var rule))
+                if (configuration.Rules.TryGetValue(property, out var rule))
                 {
                     // TODO: Check another rules for obis code with tag and if not exists use primary
                     if (!ValidateRuleDataAccess(rule, data.LogicalName, tag))
                         continue;
 
-                    var genericRule = GetGenericConverterRule(rule);
+                    var genericRule = GetGenericRule(rule);
                     if (genericRule == null)
                         continue;
 
-                    var result = ConversionStep(model, rule, genericRule, property, data);
+                    var result = ConversionStep.Process(model, rule, genericRule, property, data);
                     property.SetValue(model, result);
 
-                    var validationResult = ValidationStep(rule.DestinationType, genericRule, result);
+                    var validationResult = ValidationStep.Process(rule.DestinationType, genericRule, result);
                     if (!validationResult)
                         property.SetValue(model, rule.DefaultValue);
                 }
@@ -56,108 +76,57 @@ namespace ObisMapper
             return model;
         }
 
-        public TModel PartialMapAsync<TModel>(TModel model, ObisDataModel data,
-            AbstractObisModelConverter<TModel> converter,
+        /// <summary>
+        ///     Asynchronously partially maps data from a single OBIS data model to an existing instance of the specified model
+        ///     type.
+        /// </summary>
+        public async Task<TModel> PartialMapAsync<TModel>(TModel model, ObisDataModel data,
+            ModelConfiguration<TModel> configuration, string tag = "",
             CancellationToken cancellationToken = default) where TModel : IObisModel
         {
-            throw new NotImplementedException();
+            foreach (var property in GetTypeProperties(model.GetType()))
+                if (configuration.Rules.TryGetValue(property, out var rule))
+                {
+                    // TODO: Check another rules for obis code with tag and if not exists use primary
+                    if (!ValidateRuleDataAccess(rule, data.LogicalName, tag))
+                        continue;
+
+                    var genericRule = GetGenericRule(rule);
+                    if (genericRule == null)
+                        continue;
+
+                    var conversionResult =
+                        await ConversionStep.ProcessAsync(model, rule, genericRule, property, data, cancellationToken);
+                    property.SetValue(model, conversionResult);
+
+                    var validationResult = await ValidationStep.ProcessAsync(rule.DestinationType, genericRule,
+                        conversionResult, cancellationToken);
+                    if (!validationResult)
+                        property.SetValue(model, rule.DefaultValue);
+                }
+
+            return model;
         }
 
-        private static bool ValidateRuleDataAccess(AbstractRule rule, string logicalName, string tag)
+        // TODO: Hmmm... Not good enough
+        private static bool ValidateRuleDataAccess(BaseModelRule modelRule, string logicalName, string tag)
         {
-            if (rule.LogicalNameModels.Any(x => x.LogicalName.Equals(logicalName)
-                                                && (x.Tag.Equals(tag) || rule.IsPrimary)))
+            if (modelRule.LogicalNameModels.Any(x => x.LogicalName.Equals(logicalName)
+                                                     && (x.Tag.Equals(tag) || modelRule.IsPrimary)))
                 return true;
 
             return false;
         }
 
-        private object? GetGenericConverterRule(AbstractRule rule)
+        private static object? GetGenericRule(BaseModelRule modelRule)
         {
-            var genericRuleType = typeof(ConverterRule<>).MakeGenericType(rule.DestinationType);
-            return Convert.ChangeType(rule, genericRuleType);
-        }
-
-        private object? ConversionStep<TModel>(TModel model, AbstractRule rule, object genericRule,
-            PropertyInfo property, ObisDataModel dataModel)
-        {
-            var conversionHandlerProperty = GetPrivateProperty(genericRule, "ConversionHandler");
-
-            var conversionHandler = conversionHandlerProperty?.GetValue(genericRule);
-            if (conversionHandler == null)
-                return DefaultValueConverter(rule.DestinationType, dataModel.Value, rule.DefaultValue);
-
-            var conversionInvoker = CreateExpression(typeof(IConversionHandler<>), rule.DestinationType, "Convert");
-
-            try
-            {
-                return conversionInvoker.Invoke(conversionHandler, property.GetValue(model), dataModel.Value,
-                    dataModel.LogicalName);
-            }
-            catch (Exception e)
-            {
-                return DefaultValueConverter(rule.DestinationType, dataModel.Value, rule.DefaultValue);
-            }
-        }
-
-        private static object? DefaultValueConverter(Type destinationType, object? value, object? defaultValue)
-        {
-            if (value != null && value.GetType() == destinationType) return value;
-
-            if (value == null) return defaultValue;
-
-            var convertedValue = Convert.ChangeType(value, destinationType);
-            return convertedValue ?? defaultValue;
-        }
-
-        private bool ValidationStep(Type destinationType, object genericRule, object value)
-        {
-            var validationHandlerProperty = GetPrivateProperty(genericRule, "ValidationHandler");
-
-            var validationHandler = validationHandlerProperty?.GetValue(genericRule);
-            if (validationHandler == null) return true;
-
-            var validationInvoker = CreateExpression(typeof(IValidationHandler<>), destinationType, "Validate");
-
-            return (bool)validationInvoker.Invoke(validationHandler, value);
-        }
-
-        private PropertyInfo? GetPrivateProperty(object type, string name)
-        {
-            return type.GetType()
-                .GetProperty(name, BindingFlags.NonPublic | BindingFlags.Instance);
+            var genericRuleType = typeof(ModelRule<>).MakeGenericType(modelRule.DestinationType);
+            return Convert.ChangeType(modelRule, genericRuleType);
         }
 
         private PropertyInfo[] GetTypeProperties(Type type)
         {
             return _cache.TypePropertiesCache.GetOrAdd(type, t => t.GetProperties());
         }
-
-        private static Invoker CreateExpression(Type mainType, Type genericType, string methodName)
-        {
-            var method = mainType
-                .MakeGenericType(genericType)
-                .GetMethod(methodName);
-
-            return CreateExpression(method);
-        }
-
-        private static Invoker CreateExpression(MethodInfo method)
-        {
-            var targetArg = Expression.Parameter(typeof(object));
-            var argsArg = Expression.Parameter(typeof(object[]));
-            Expression body = Expression.Call(
-                method.IsStatic ? null : Expression.Convert(targetArg, method.DeclaringType),
-                method,
-                method.GetParameters().Select((p, i) =>
-                    Expression.Convert(Expression.ArrayIndex(argsArg, Expression.Constant(i)), p.ParameterType)));
-            if (body.Type == typeof(void))
-                body = Expression.Block(body, Expression.Constant(null));
-            else if (body.Type.IsValueType)
-                body = Expression.Convert(body, typeof(object));
-            return Expression.Lambda<Invoker>(body, targetArg, argsArg).Compile();
-        }
-
-        private delegate object Invoker(object target, params object[] args);
     }
 }

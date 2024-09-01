@@ -1,8 +1,9 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using ObisMapper.Abstractions.Fluent;
 
-namespace ObisMapper.Abstractions.Mappings.Converters
+namespace ObisMapper.Fluent.Conversions
 {
     internal class InitialValueLogicalNameValueConversionHandlerAsync<TDestination> : IConversionHandler<TDestination>
     {

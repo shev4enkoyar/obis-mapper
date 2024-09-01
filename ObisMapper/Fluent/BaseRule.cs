@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using ObisMapper.Models;
 
-namespace ObisMapper.Mappings
+namespace ObisMapper.Fluent
 {
-    internal abstract class AbstractRule
+    internal abstract class BaseModelRule
     {
         internal abstract Type DestinationType { get; }
 
-        internal abstract object DefaultValue { get; }
+        internal abstract object? DefaultValue { get; }
 
         internal abstract List<LogicalNameModel> LogicalNameModels { get; }
 

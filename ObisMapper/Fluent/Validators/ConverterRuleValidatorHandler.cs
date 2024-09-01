@@ -1,8 +1,9 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using ObisMapper.Abstractions.Fluent;
 
-namespace ObisMapper.Abstractions.Mappings.Validators
+namespace ObisMapper.Fluent.Validators
 {
     internal class ConverterRuleValidatorHandler<TDestination> : IValidationHandler<TDestination>
     {
