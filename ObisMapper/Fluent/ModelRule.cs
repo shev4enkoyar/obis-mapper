@@ -12,17 +12,18 @@ namespace ObisMapper.Fluent
 {
     internal class ModelRule<TDestination> : BaseModelRule, IModelRule<TDestination>
     {
+        private TDestination _defaultValue = default!;
+        private bool _isPrimary;
         private string _tag = TagConstant.DefaultTag;
-        internal IConversionHandler<TDestination>? ConversionHandler { get; private set; }
+        private IConversionHandler<TDestination>? ConversionHandler { get; set; }
 
-        internal List<IValidationHandler<TDestination>> ValidationHandlers { get; } =
+        private List<IValidationHandler<TDestination>> ValidationHandlers { get; } =
             new List<IValidationHandler<TDestination>>();
 
-
         internal override Type DestinationType => typeof(TDestination);
-
+        internal override object? DefaultValue => _defaultValue;
+        internal override List<LogicalNameModel> LogicalNameModels { get; } = new List<LogicalNameModel>();
         internal override string Tag => _tag;
-
         internal override bool IsPrimary => _isPrimary;
 
 
@@ -45,10 +46,6 @@ namespace ObisMapper.Fluent
             _isPrimary = true;
             return this;
         }
-
-        private TDestination _defaultValue = default!;
-        private bool _isPrimary;
-        internal override object? DefaultValue => _defaultValue;
 
         #endregion
 
@@ -97,8 +94,6 @@ namespace ObisMapper.Fluent
         #endregion
 
         #region Logical names
-
-        internal override List<LogicalNameModel> LogicalNameModels { get; } = new List<LogicalNameModel>();
 
         public IModelRule<TDestination> AddLogicalName(LogicalNameModel logicalName)
         {

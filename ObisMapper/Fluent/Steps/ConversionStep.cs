@@ -60,9 +60,16 @@ namespace ObisMapper.Fluent.Steps
 
         private static object? DefaultValueConverter(Type destinationType, object? value, object? defaultValue)
         {
-            if (value != null && value.GetType() == destinationType) return value;
-
-            if (value == null) return defaultValue;
+            if (value == null) 
+                return defaultValue;
+            
+            if (value.GetType() == destinationType) 
+                return value;
+            
+            var underlyingType = Nullable.GetUnderlyingType(destinationType) ?? destinationType;
+            
+            if (value.GetType() == underlyingType)
+                return value;
 
             var convertedValue = Convert.ChangeType(value, destinationType);
             return convertedValue ?? defaultValue;
