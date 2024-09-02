@@ -11,7 +11,7 @@ namespace ObisMapper.Fluent.Steps
     {
         internal static bool Process(Type destinationType, object genericRule, object? value)
         {
-            var validationHandlerProperty = PropertyHelper.GetPrivateProperty(genericRule, "ValidationHandlers");
+            var validationHandlerProperty = ReflectionHelper.GetPrivateProperty(genericRule, "ValidationHandlers");
 
             var validationHandlers = validationHandlerProperty?.GetValue(genericRule);
             if (validationHandlers == null)
@@ -31,7 +31,7 @@ namespace ObisMapper.Fluent.Steps
         internal static async Task<bool> ProcessAsync(Type destinationType, object genericRule, object? value,
             CancellationToken cancellationToken)
         {
-            var validationHandlerProperty = PropertyHelper.GetPrivateProperty(genericRule, "ValidationHandlers");
+            var validationHandlerProperty = ReflectionHelper.GetPrivateProperty(genericRule, "ValidationHandlers");
 
             var validationHandlers = validationHandlerProperty?.GetValue(genericRule);
             if (validationHandlers == null)

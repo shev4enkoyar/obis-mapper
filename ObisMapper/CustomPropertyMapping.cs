@@ -5,6 +5,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using ObisMapper.Attributes;
+using ObisMapper.Constants;
 
 namespace ObisMapper
 {
@@ -38,7 +39,7 @@ namespace ObisMapper
         /// </param>
         /// <param name="tag">
         ///     The tag used to distinguish different mappings for the same logical name.
-        ///     The default value is <see cref="LogicalNameMappingAttribute.DefaultTag" />.
+        ///     The default value is <see cref="TagConstant.DefaultTag" />.
         /// </param>
         /// <returns>
         ///     The current instance of <see cref="CustomPropertyMapping{TModel}" />, allowing for method chaining.
@@ -46,7 +47,7 @@ namespace ObisMapper
         public CustomPropertyMapping<TModel> CreateMapping<TDestination>(
             Expression<Func<TModel, TDestination>> propertyExpression,
             Func<TDestination, object, TDestination> conversionHandler,
-            string tag = LogicalNameMappingAttribute.DefaultTag)
+            string tag = TagConstant.DefaultTag)
         {
             var propertyInfo = (propertyExpression.Body as MemberExpression)?.Member as PropertyInfo;
             if (propertyInfo == null)

@@ -21,11 +21,10 @@ namespace ObisMapper.Utils
         {
             var targetArg = Expression.Parameter(typeof(object));
             var argsArg = Expression.Parameter(typeof(object[]));
-            Expression body = Expression.Call(
-                method.IsStatic ? null : Expression.Convert(targetArg, method.DeclaringType),
-                method,
-                method.GetParameters().Select((p, i) =>
-                    Expression.Convert(Expression.ArrayIndex(argsArg, Expression.Constant(i)), p.ParameterType)));
+            Expression body = Expression.Call(method.IsStatic
+                ? null
+                : Expression.Convert(targetArg, method.DeclaringType), method, method.GetParameters().Select((p, i) =>
+                Expression.Convert(Expression.ArrayIndex(argsArg, Expression.Constant(i)), p.ParameterType)));
             if (body.Type == typeof(void))
                 body = Expression.Block(body, Expression.Constant(null));
             else if (body.Type.IsValueType)
@@ -39,31 +38,10 @@ namespace ObisMapper.Utils
                 .MakeGenericType(genericType)
                 .GetMethod(methodName);
 
+            if (method == null) throw new ArgumentException("Method '{0}' not found", methodName);
+
             return CreateExpressionAsync(method);
         }
-
-        // private static InvokerAsync CreateExpressionAsync(MethodInfo method)
-        // {
-        //     var targetArg = Expression.Parameter(typeof(object));
-        //     var argsArg = Expression.Parameter(typeof(object[]));
-        //
-        //     Expression body = Expression.Call(
-        //         Expression.Convert(targetArg, method.DeclaringType),
-        //         method,
-        //         method.GetParameters().Select((p, i) =>
-        //             Expression.Convert(Expression.ArrayIndex(argsArg, Expression.Constant(i)), p.ParameterType)));
-        //
-        //     if (body.Type.IsGenericType && body.Type.GetGenericTypeDefinition() == typeof(Task<>))
-        //         body = Expression.Convert(body, typeof(Task<object>));
-        //     else
-        //         body = Expression.Call(
-        //             typeof(Task),
-        //             "FromResult",
-        //             new[] { typeof(object) },
-        //             body);
-        //
-        //     return Expression.Lambda<InvokerAsync>(body, targetArg, argsArg).Compile();
-        // }
 
         private static InvokerAsync CreateExpressionAsync(MethodInfo method)
         {

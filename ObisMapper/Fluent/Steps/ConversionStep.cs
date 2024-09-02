@@ -13,7 +13,7 @@ namespace ObisMapper.Fluent.Steps
         internal static object? Process<TModel>(TModel model, BaseModelRule modelRule, object genericRule,
             PropertyInfo property, ObisDataModel dataModel)
         {
-            var conversionHandlerProperty = PropertyHelper.GetPrivateProperty(genericRule, "ConversionHandler");
+            var conversionHandlerProperty = ReflectionHelper.GetPrivateProperty(genericRule, "ConversionHandler");
 
             var conversionHandler = conversionHandlerProperty?.GetValue(genericRule);
             if (conversionHandler == null)
@@ -28,18 +28,16 @@ namespace ObisMapper.Fluent.Steps
                 return conversionInvoker.Invoke(conversionHandler, property.GetValue(model), dataModel.Value,
                     dataModel.LogicalName);
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                // TODO: Handle exception and log
                 return DefaultValueConverter(modelRule.DestinationType, dataModel.Value, modelRule.DefaultValue);
             }
         }
 
         internal static async Task<object?> ProcessAsync<TModel>(TModel model, BaseModelRule modelRule,
-            object genericRule,
-            PropertyInfo property, ObisDataModel dataModel, CancellationToken cancellationToken = default)
+            object genericRule, PropertyInfo property, ObisDataModel dataModel, CancellationToken cancellationToken)
         {
-            var conversionHandlerProperty = PropertyHelper.GetPrivateProperty(genericRule, "ConversionHandler");
+            var conversionHandlerProperty = ReflectionHelper.GetPrivateProperty(genericRule, "ConversionHandler");
 
             var conversionHandler = conversionHandlerProperty?.GetValue(genericRule);
             if (conversionHandler == null)
@@ -54,9 +52,8 @@ namespace ObisMapper.Fluent.Steps
                 return await conversionInvokerAsync.Invoke(conversionHandler, property.GetValue(model), dataModel.Value,
                     dataModel.LogicalName, cancellationToken);
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                // TODO: Handle exception and log
                 return DefaultValueConverter(modelRule.DestinationType, dataModel.Value, modelRule.DefaultValue);
             }
         }

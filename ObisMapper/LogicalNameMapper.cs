@@ -3,6 +3,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using ObisMapper.Attributes;
+using ObisMapper.Constants;
 
 namespace ObisMapper
 {
@@ -25,7 +26,7 @@ namespace ObisMapper
         /// <param name="logicalName">The logical name to match for property filling.</param>
         /// <param name="value">The value to set for the matching properties.</param>
         /// <param name="tag">
-        ///     The tag to match for property filling. The default value is <see cref="LogicalNameMappingAttribute.DefaultTag" />.
+        ///     The tag to match for property filling. The default value is <see cref="TagConstant.DefaultTag" />.
         /// </param>
         /// <param name="customMapping">
         ///     An optional parameter that provides custom property mappings for the model.
@@ -34,7 +35,7 @@ namespace ObisMapper
         /// </param>
         /// <returns>The model with filled properties.</returns>
         public T FillObisModel<T>(T model, string logicalName, object value,
-            string tag = LogicalNameMappingAttribute.DefaultTag, CustomPropertyMapping<T>? customMapping = null)
+            string tag = TagConstant.DefaultTag, CustomPropertyMapping<T>? customMapping = null)
             where T : notnull
         {
             foreach (var property in GetTypeProperties(model.GetType()))

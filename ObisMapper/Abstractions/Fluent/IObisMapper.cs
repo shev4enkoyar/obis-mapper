@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using ObisMapper.Constants;
 using ObisMapper.Fluent;
 
 namespace ObisMapper.Abstractions.Fluent
@@ -21,7 +22,7 @@ namespace ObisMapper.Abstractions.Fluent
         TModel Map<TModel>(
             IEnumerable<ObisDataModel> data,
             ModelConfiguration<TModel> configuration,
-            string tag = "") where TModel : IObisModel, new();
+            string tag = TagConstant.DefaultTag) where TModel : IObisModel, new();
 
         /// <summary>
         ///     Asynchronously maps a collection of OBIS data models to a new instance of the specified model type.
@@ -38,7 +39,7 @@ namespace ObisMapper.Abstractions.Fluent
         Task<TModel> MapAsync<TModel>(
             IEnumerable<ObisDataModel> data,
             ModelConfiguration<TModel> configuration,
-            string tag = "",
+            string tag = TagConstant.DefaultTag,
             CancellationToken cancellationToken = default) where TModel : IObisModel, new();
 
         /// <summary>
@@ -54,7 +55,7 @@ namespace ObisMapper.Abstractions.Fluent
             TModel model,
             ObisDataModel data,
             ModelConfiguration<TModel> configuration,
-            string tag = "") where TModel : IObisModel;
+            string tag = TagConstant.DefaultTag) where TModel : IObisModel;
 
         /// <summary>
         ///     Asynchronously partially maps data from a single OBIS data model to an existing instance of the specified model
@@ -74,7 +75,7 @@ namespace ObisMapper.Abstractions.Fluent
             TModel model,
             ObisDataModel data,
             ModelConfiguration<TModel> configuration,
-            string tag = "",
+            string tag = TagConstant.DefaultTag,
             CancellationToken cancellationToken = default) where TModel : IObisModel;
     }
 }

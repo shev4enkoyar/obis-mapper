@@ -1,10 +1,10 @@
+using ObisMapper.Constants;
+
 namespace ObisMapper.Models
 {
     public struct LogicalNameModel
     {
-        public const string DefaultTag = "";
-
-        public LogicalNameModel(string logicalName, string tag = DefaultTag, string description = "")
+        public LogicalNameModel(string logicalName, string tag = TagConstant.DefaultTag, string description = "")
         {
             LogicalName = logicalName;
             Description = description;

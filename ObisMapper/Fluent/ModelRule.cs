@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using ObisMapper.Abstractions.Fluent;
+using ObisMapper.Constants;
 using ObisMapper.Fluent.Conversions;
 using ObisMapper.Fluent.Validators;
 using ObisMapper.Models;
@@ -11,7 +12,7 @@ namespace ObisMapper.Fluent
 {
     internal class ModelRule<TDestination> : BaseModelRule, IModelRule<TDestination>
     {
-        private string _tag = "";
+        private string _tag = TagConstant.DefaultTag;
         internal IConversionHandler<TDestination>? ConversionHandler { get; private set; }
 
         internal List<IValidationHandler<TDestination>> ValidationHandlers { get; } =

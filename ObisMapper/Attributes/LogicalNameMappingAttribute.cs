@@ -1,4 +1,5 @@
 using System;
+using ObisMapper.Constants;
 
 namespace ObisMapper.Attributes
 {
@@ -8,11 +9,6 @@ namespace ObisMapper.Attributes
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = true)]
     public class LogicalNameMappingAttribute : Attribute
     {
-        /// <summary>
-        ///     The default tag value.
-        /// </summary>
-        public const string DefaultTag = "default";
-
         /// <summary>
         ///     Initializes a new instance of the <see cref="LogicalNameMappingAttribute" /> class.
         /// </summary>
@@ -25,7 +21,7 @@ namespace ObisMapper.Attributes
         /// <summary>
         ///     Gets or sets the tag to distinguish different mappings for the same logical name.
         /// </summary>
-        public string Tag { get; set; } = DefaultTag;
+        public string Tag { get; set; } = TagConstant.DefaultTag;
 
         /// <summary>
         ///     Gets the logical name that the property is mapped to.
