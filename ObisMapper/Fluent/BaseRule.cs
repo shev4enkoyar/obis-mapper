@@ -10,7 +10,7 @@ namespace ObisMapper.Fluent
 
         internal abstract object? DefaultValue { get; }
 
-        internal abstract List<LogicalNameModel> LogicalNameModels { get; }
+        internal abstract List<LogicalName> LogicalNameModels { get; }
 
         internal abstract string Tag { get; }
 

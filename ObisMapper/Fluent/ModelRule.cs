@@ -22,12 +22,17 @@ namespace ObisMapper.Fluent
 
         internal override Type DestinationType => typeof(TDestination);
         internal override object? DefaultValue => _defaultValue;
-        internal override List<LogicalNameModel> LogicalNameModels { get; } = new List<LogicalNameModel>();
+        internal override List<LogicalName> LogicalNameModels { get; } = new List<LogicalName>();
         internal override string Tag => _tag;
         internal override bool IsPrimary => _isPrimary;
 
 
         #region Default values
+
+        public IModelRule<TNestedModel> MapNestedModel<TNestedModel>(Action<IModelRule<TNestedModel>> nestedConfigurator) where TNestedModel : class
+        {
+            throw new NotImplementedException();
+        }
 
         public IModelRule<TDestination> AddDefaultValue(TDestination defaultValue)
         {
@@ -95,19 +100,19 @@ namespace ObisMapper.Fluent
 
         #region Logical names
 
-        public IModelRule<TDestination> AddLogicalName(LogicalNameModel logicalName)
+        public IModelRule<TDestination> AddLogicalName(LogicalName logicalName)
         {
             LogicalNameModels.Add(logicalName);
             return this;
         }
 
-        public IModelRule<TDestination> AddLogicalName(params LogicalNameModel[] logicalNames)
+        public IModelRule<TDestination> AddLogicalName(params LogicalName[] logicalNames)
         {
             LogicalNameModels.AddRange(logicalNames);
             return this;
         }
 
-        public IModelRule<TDestination> AddLogicalName(LogicalNameModelGroup logicalNameGroup)
+        public IModelRule<TDestination> AddLogicalName(LogicalNameGroup logicalNameGroup)
         {
             return this;
         }

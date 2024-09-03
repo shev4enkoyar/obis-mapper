@@ -1,8 +1,9 @@
+using ObisMapper.Abstractions.Fluent;
 using ObisMapper.Attributes;
 
 namespace ObisMapper.Tests.Models;
 
-public class ModelWithNestedModel
+public class ModelWithNestedModel : IObisModel
 {
     [LogicalNameMapping("1.1.1.1")] public int? SimpleData { get; set; }
 

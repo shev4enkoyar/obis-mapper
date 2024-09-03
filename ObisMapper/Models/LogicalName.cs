@@ -2,16 +2,16 @@ using ObisMapper.Constants;
 
 namespace ObisMapper.Models
 {
-    public struct LogicalNameModel
+    public struct LogicalName
     {
-        public LogicalNameModel(string logicalName, string tag = TagConstant.DefaultTag, string description = "")
+        public LogicalName(string name, string tag = TagConstant.DefaultTag, string description = "")
         {
-            LogicalName = logicalName;
+            Name = name;
             Description = description;
             Tag = tag;
         }
 
-        public string LogicalName { get; }
+        public string Name { get; }
 
         public string Tag { get; }
 

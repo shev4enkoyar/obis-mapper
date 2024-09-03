@@ -1,4 +1,5 @@
 using System;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using ObisMapper.Models;
@@ -11,6 +12,8 @@ namespace ObisMapper.Abstractions.Fluent
     /// <typeparam name="TDestination">The type of the destination to map to.</typeparam>
     public interface IModelRule<TDestination>
     {
+        IModelRule<TNestedModel> MapNestedModel<TNestedModel>(Action<IModelRule<TNestedModel>> nestedConfigurator) where TNestedModel : class;
+
         /// <summary>
         ///     Sets the default value for the mapping rule.
         /// </summary>
@@ -38,21 +41,21 @@ namespace ObisMapper.Abstractions.Fluent
         /// </summary>
         /// <param name="logicalName">The logical name to associate with the mapping rule.</param>
         /// <returns>The current instance of <see cref="IModelRule{TDestination}" />.</returns>
-        IModelRule<TDestination> AddLogicalName(LogicalNameModel logicalName);
+        IModelRule<TDestination> AddLogicalName(LogicalName logicalName);
 
         /// <summary>
         ///     Adds multiple logical names to the mapping rule.
         /// </summary>
         /// <param name="logicalNames">The logical names to associate with the mapping rule.</param>
         /// <returns>The current instance of <see cref="IModelRule{TDestination}" />.</returns>
-        IModelRule<TDestination> AddLogicalName(params LogicalNameModel[] logicalNames);
+        IModelRule<TDestination> AddLogicalName(params LogicalName[] logicalNames);
 
         /// <summary>
         ///     Adds a group of logical names to the mapping rule.
         /// </summary>
         /// <param name="logicalNameGroup">The group of logical names to associate with the mapping rule.</param>
         /// <returns>The current instance of <see cref="IModelRule{TDestination}" />.</returns>
-        IModelRule<TDestination> AddLogicalName(LogicalNameModelGroup logicalNameGroup);
+        IModelRule<TDestination> AddLogicalName(LogicalNameGroup logicalNameGroup);
 
         #endregion
 

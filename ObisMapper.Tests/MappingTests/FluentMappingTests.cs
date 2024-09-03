@@ -71,30 +71,84 @@ public class FluentMappingTests
         ];
     }
 
+    public static IEnumerable<object[]> GetCorrectTestDataForModelWithNestedModel()
+    {
+        yield return
+        [
+            new List<ObisDataModel>
+            {
+                new("1.1.1.1", 1),
+                new("2.1.1.1", 2),
+                new("2.1.1.2", "Test")
+            },
+            new ModelWithNestedModel
+            {
+                SimpleData = 1,
+                NestedData = new NestedModel
+                {
+                    NestedIntData = 2,
+                    NestedStringData = "Test"
+                }
+            }
+        ];
+        yield return
+        [
+            new List<ObisDataModel>
+            {
+                new("1.1.1.1", 1),
+                new("2.1.1.1", 2),
+                new("2.1.1.2", "Test")
+            },
+            new ModelWithNestedModel
+            {
+                SimpleData = 1,
+                NestedData = new NestedModel
+                {
+                    NestedIntData = 2,
+                    NestedStringData = "Test"
+                }
+            }
+        ];
+    }
+
     private class SimpleModelConfiguration : ModelConfiguration<SimpleModel>
     {
         public SimpleModelConfiguration()
         {
             RuleFor(x => x.FirstNumericData)
-                .AddLogicalName(new LogicalNameModel("1.1.1.1"))
+                .AddLogicalName(new LogicalName("1.1.1.1"))
                 .AddValidatorAsync((x, token) => { return Task.FromResult(true); })
                 .AddValidator(x => x is < 5 or int.MaxValue)
                 .AddDefaultValue(10);
 
             RuleFor(x => x.SecondNumericData)
-                .AddLogicalName(new LogicalNameModel("1.1.1.2"));
+                .AddLogicalName(new LogicalName("1.1.1.2"));
 
             RuleFor(x => x.FirstStringData)
-                .AddLogicalName(new LogicalNameModel("1.1.2.1"));
+                .AddLogicalName(new LogicalName("1.1.2.1"));
 
             RuleFor(x => x.SecondStringData)
-                .AddLogicalName(new LogicalNameModel("1.1.2.2"));
+                .AddLogicalName(new LogicalName("1.1.2.2"));
 
             RuleFor(x => x.FirstDoubleData)
-                .AddLogicalName(new LogicalNameModel("1.1.3.1"));
+                .AddLogicalName(new LogicalName("1.1.3.1"));
 
             RuleFor(x => x.SecondDoubleData)
-                .AddLogicalName(new LogicalNameModel("1.1.3.2"));
+                .AddLogicalName(new LogicalName("1.1.3.2"));
+        }
+    }
+
+    private class NestedModelConfiguration : ModelConfiguration<ModelWithNestedModel>
+    {
+        public NestedModelConfiguration()
+        {
+            RuleFor(x => x.SimpleData)
+                .AddLogicalName(new LogicalName("1.1.1.1"));
+
+            RuleFor(x => x.NestedData.NestedStringData)
+                .MapNestedModel<NestedModel>(x =>
+                {
+                });
         }
     }
 }
