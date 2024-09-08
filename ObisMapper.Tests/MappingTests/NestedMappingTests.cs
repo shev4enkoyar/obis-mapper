@@ -1,3 +1,4 @@
+using ObisMapper.Models;
 using ObisMapper.Tests.Models;
 
 namespace ObisMapper.Tests.MappingTests;
