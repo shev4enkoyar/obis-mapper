@@ -1,5 +1,4 @@
 using System;
-using ObisMapper.Constants;
 
 namespace ObisMapper.Models
 {

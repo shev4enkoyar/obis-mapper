@@ -2,11 +2,14 @@ using ObisMapper.FluentMapper.Abstraction;
 
 namespace ObisMapper.FluentMapper
 {
-    public class ObisMapper
+    public class ObisMapper<TModel>
     {
-        public IMappingExpression<TModel> CreateMap<TModel>()
+        private MappingExpression<TModel>? _expression;
+
+        public IMappingExpression<TModel> CreateMap()
         {
-            return new MappingExpression<TModel>();
+            _expression = new MappingExpression<TModel>();
+            return _expression;
         }
     }
 }
