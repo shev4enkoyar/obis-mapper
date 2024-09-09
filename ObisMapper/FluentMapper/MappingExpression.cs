@@ -5,40 +5,22 @@ using ObisMapper.Models;
 
 namespace ObisMapper.FluentMapper
 {
-    public class MappingExpression<TModel> : IMappingExpression<TModel>
+    internal class MappingExpression<TModel> : IMappingExpression<TModel>
     {
         private readonly MappingDictionary _mapping = new MappingDictionary();
-
-        public IMappingExpression<TModel> ForMember<TDestination>(Expression<Func<TModel, TDestination>> sourceValue,
-            LogicalNameGroup logicalNameGroup)
-        {
-            var configuration = new MappingConfiguration<TModel, TDestination>();
-
-            if (sourceValue.Body is MemberExpression memberExpression)
-            {
-                var propertyHash = memberExpression.Member.GetHashCode();
-
-                foreach (var logicalName in logicalNameGroup.LogicalNames)
-                    _mapping.AddConfiguration(logicalName, propertyHash, configuration);
-            }
-
-            return this;
-        }
-
+        
         public IMappingExpression<TModel> ForMember<TDestination>(Expression<Func<TModel, TDestination>> sourceValue,
             LogicalNameGroup logicalNameGroup,
             Func<IMappingConfiguration<TModel, TDestination>, IMappingConfiguration<TModel, TDestination>> configure)
         {
-            var configuration = new MappingConfiguration<TModel, TDestination>();
+            if (!(sourceValue.Body is MemberExpression memberExpression)) 
+                return this;
+            
+            var propertyHash = memberExpression.Member.GetHashCode();
 
-            if (sourceValue.Body is MemberExpression memberExpression)
-            {
-                var propertyHash = memberExpression.Member.GetHashCode();
-
-                var config = configure.Invoke(configuration);
-                foreach (var logicalName in logicalNameGroup.LogicalNames)
-                    _mapping.AddConfiguration(logicalName, propertyHash, config);
-            }
+            var config = configure.Invoke(new MappingConfiguration<TModel, TDestination>());
+            foreach (var logicalName in logicalNameGroup.LogicalNames)
+                _mapping.AddConfiguration(logicalName, propertyHash, config);
 
             return this;
         }

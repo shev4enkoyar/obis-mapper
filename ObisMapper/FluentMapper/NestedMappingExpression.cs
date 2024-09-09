@@ -5,30 +5,14 @@ using ObisMapper.Models;
 
 namespace ObisMapper.FluentMapper
 {
-    public class NestedMappingExpression<TNestedModel, TParentModel>
+    internal class NestedMappingExpression<TNestedModel, TParentModel>
         : IMappingNestedExpression<TNestedModel, TParentModel>
     {
         private readonly MappingDictionary _mapping;
 
-        public NestedMappingExpression(MappingDictionary mapping)
+        internal NestedMappingExpression(MappingDictionary mapping)
         {
             _mapping = mapping;
-        }
-
-        public IMappingExpression<TNestedModel> ForMember<TDestination>(
-            Expression<Func<TNestedModel, TDestination>> sourceValue, LogicalNameGroup logicalNameGroup)
-        {
-            var configuration = new MappingConfiguration<TNestedModel, TDestination>();
-
-            if (!(sourceValue.Body is MemberExpression memberExpression))
-                return this;
-
-            var propertyHash = memberExpression.Member.GetHashCode();
-
-            foreach (var logicalName in logicalNameGroup.LogicalNames)
-                _mapping.AddConfiguration(logicalName, propertyHash, configuration);
-
-            return this;
         }
 
         public IMappingExpression<TNestedModel> ForMember<TDestination>(

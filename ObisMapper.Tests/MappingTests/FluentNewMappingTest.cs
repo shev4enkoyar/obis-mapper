@@ -11,13 +11,11 @@ public class FluentNewMappingTest
     {
         var mapper = new ObisMapper<Person>();
         mapper.CreateMap()
-            .ForMember(x => x.Name, new LogicalNameGroup(new LogicalName("1.1.2.3")))
             .ForMember(x => x.Name, new LogicalNameGroup(new LogicalName("1.1.1.1")), configuration =>
             {
                 configuration.AddConverter(o => (string)o);
                 return configuration;
             })
-            .ForMember(x => x.SecondName, new LogicalNameGroup(new LogicalName("2.1.1.1")))
             .ForMember(x => x.Address, configure =>
             {
                 configure.ForMember(x => x.City,

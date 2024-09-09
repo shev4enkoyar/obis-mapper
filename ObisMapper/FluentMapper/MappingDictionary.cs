@@ -6,7 +6,7 @@ using ObisMapper.Models;
 
 namespace ObisMapper.FluentMapper
 {
-    public class MappingDictionary
+    internal class MappingDictionary
     {
         private readonly Dictionary<LogicalName, IMappingConfiguration[]> _cachedConfigurations =
             new Dictionary<LogicalName, IMappingConfiguration[]>();
@@ -15,7 +15,7 @@ namespace ObisMapper.FluentMapper
             new Dictionary<string, Dictionary<int, Dictionary<string, IMappingConfiguration>>>();
 
 
-        public void AddConfiguration(LogicalName logicalName, int propertyMemberHash,
+        internal void AddConfiguration(LogicalName logicalName, int propertyMemberHash,
             IMappingConfiguration configuration)
         {
             if (_mapping.TryGetValue(logicalName.Name, out var propertyLevelMapping))
@@ -48,7 +48,7 @@ namespace ObisMapper.FluentMapper
             }
         }
 
-        public IMappingConfiguration[] GetConfigurations(LogicalName logicalName)
+        internal IMappingConfiguration[] GetConfigurations(LogicalName logicalName)
         {
             if (_cachedConfigurations.TryGetValue(logicalName, out var cachedConfigurations))
                 return cachedConfigurations;
