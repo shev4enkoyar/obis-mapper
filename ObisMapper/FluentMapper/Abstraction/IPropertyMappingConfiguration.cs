@@ -10,6 +10,7 @@ namespace ObisMapper.FluentMapper.Abstraction
 
     public interface IMappingConfiguration<TModel, TDestination> : IMappingConfiguration
     {
+        void SetDefaultValue(TDestination value);
         void AddConverter(Func<object, TDestination> converter);
 
         void AddConverter(Func<object, TDestination, TDestination> converter);

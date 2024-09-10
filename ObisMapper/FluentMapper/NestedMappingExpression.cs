@@ -20,14 +20,12 @@ namespace ObisMapper.FluentMapper
             Func<IMappingConfiguration<TNestedModel, TDestination>, IMappingConfiguration<TNestedModel, TDestination>>
                 configure)
         {
-            var configuration = new MappingConfiguration<TNestedModel, TDestination>();
-
             if (!(sourceValue.Body is MemberExpression memberExpression))
                 return this;
 
             var propertyHash = memberExpression.Member.GetHashCode();
 
-            var config = configure.Invoke(configuration);
+            var config = configure.Invoke(new MappingConfiguration<TNestedModel, TDestination>());
             foreach (var logicalName in logicalNameGroup.LogicalNames)
                 _mapping.AddConfiguration(logicalName, propertyHash, config);
 

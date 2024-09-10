@@ -8,6 +8,13 @@ namespace ObisMapper.FluentMapper
     internal class MappingConfiguration<TModel, TDestination> : MappingConfigurationBase,
         IMappingConfiguration<TModel, TDestination>
     {
+        private TDestination _defaultValue = default!;
+
+        public void SetDefaultValue(TDestination value)
+        {
+            _defaultValue = value;
+        }
+
         public void AddConverter(Func<object, TDestination> converter)
         {
         }
